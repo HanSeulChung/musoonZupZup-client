@@ -1,6 +1,8 @@
 # musoon-zupzup-FE
-
 This template should help get you started developing with Vue 3 in Vite.
+
+## Figma
+https://www.figma.com/board/oiNWP1yNI0blErRgM71TmP/musoonzup?node-id=0-1&p=f
 
 ## Recommended IDE Setup
 
