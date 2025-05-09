@@ -23,10 +23,12 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/libs/axios'
 
+const router = useRouter()
 const auth = useAuthStore()
 const { isLoggedIn } = storeToRefs(auth)
 
@@ -37,9 +39,9 @@ const logout = async () => {
             Authorization: `Bearer ${auth.accessToken}`
         }
         })
-
         auth.logout() 
         alert('로그아웃 완료')
+        router.push('/')
     } catch (err) {
         console.error('로그아웃 실패:', err)
         alert('로그아웃 중 오류가 발생했습니다.')
