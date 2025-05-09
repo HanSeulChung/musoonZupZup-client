@@ -24,9 +24,13 @@ import Footer from './components/Footer.vue'
 }
 
 .main-content {
-  flex: 1;
-  background-color: var(--color-background);
-  color: var(--color-on-background);
-  padding: 2rem;
+  // flex: 1;
+  // background-color: var(--color-background);
+  // color: var(--color-on-background);
+  // padding: 2rem;
+  display: flex;
+  flex-direction: column; // or row depending on layout
+  justify-content: center;
+  align-items: center;
 }
 </style>
