@@ -23,13 +23,27 @@
 
 <script setup>
 import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '@/stores/auth'
+import api from '@/libs/axios'
 
-// 예시: 로그인 여부 (추후 Pinia나 Auth 연동)
-const isLoggedIn = ref(false)
+const auth = useAuthStore()
+const { isLoggedIn } = storeToRefs(auth)
 
-function logout() {
-    alert('로그아웃 처리')
-    isLoggedIn.value = false
+const logout = async () => {
+    try {
+        await api.post('/members/logout', {}, {
+        headers: {
+            Authorization: `Bearer ${auth.accessToken}`
+        }
+        })
+
+        auth.logout() 
+        alert('로그아웃 완료')
+    } catch (err) {
+        console.error('로그아웃 실패:', err)
+        alert('로그아웃 중 오류가 발생했습니다.')
+    }
 }
 </script>
 
