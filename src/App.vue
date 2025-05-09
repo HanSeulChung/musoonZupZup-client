@@ -16,7 +16,6 @@ import Footer from './components/Footer.vue'
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/theme";
 
 #app {
   display: flex;

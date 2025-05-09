@@ -1,8 +1,10 @@
 <template>
     <header class="header">
     <div class="brand">
+    <RouterLink to="/" class="brand-link">
         <img src="@/assets/logo.png" alt="로고" class="logo-img" />
         <span class="brand-name">무순줍줍</span>
+    </RouterLink>
     </div>
 
     <nav class="nav">
@@ -56,6 +58,14 @@ function logout() {
     .brand-name {
         font-size: 1.25rem;
         font-weight: bold;
+    }
+
+    .brand-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: inherit;
     }
 }
 

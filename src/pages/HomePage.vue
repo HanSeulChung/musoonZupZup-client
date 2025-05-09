@@ -1,63 +1,128 @@
 <template>
   <section class="home">
-    <div class="container">
-      <h2 class="title">무순위 청약 정보를 쉽고 빠르게</h2>
-      <p class="subtitle">청약통장 없이 누구나 참여할 수 있는 기회를 확인해보세요!</p>
-      <RouterLink to="/favorites" class="cta-button">공고 보러가기</RouterLink>
+    <!-- 1. 서비스 소개 -->
+    <div class="intro">
+      <div class="intro-wrapper">
+        <div class="intro-text">
+          <h2>무순줍줍 - 누구나 쉽게 접근하는 무순위 청약 플랫폼</h2>
+          <p>공고, 추천, 커뮤니티까지 한 곳에서 확인해보세요.</p>
+        </div>
+        <div class="intro-image">
+          <img src="@/assets/AI_robot_character.png" alt="AI 로봇 이미지" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 카드 박스로 나눈 섹션들 -->
+    <div class="card-section">
+      <!-- 2. 최신 청약 공고 BEST 3 -->
+      <div class="section-card latest">
+        <div class="card-header">🆕 최신 청약 공고</div>
+        <div class="card-body">
+          <NoticeList :type="'latest'" :limit="3" />
+        </div>
+      </div>
+
+      <!-- 3. 인기 청약 공고 BEST 3 -->
+      <div class="section-card popular">
+        <div class="card-header">🔥 인기 청약 공고</div>
+        <div class="card-body">
+          <NoticeList :type="'popular'" :limit="3" />
+        </div>
+      </div>
+
+      <!-- 4. 인기 커뮤니티 게시글 BEST 3 -->
+      <div class="section-card posts">
+        <div class="card-header">💬 인기 커뮤니티 게시글</div>
+        <div class="card-body">
+          <PostList :type="'popular'" :limit="3" />
+        </div>
+      </div>
     </div>
   </section>
 </template>
 
-<script setup></script>
+<script setup>
+import NoticeList from '@/components/NoticeList.vue'
+import PostList from '@/components/PostList.vue'
+</script>
 
 <style scoped lang="scss">
-@use "@/styles/theme" as *;
+@use '@/styles/theme' as *;
 
 .home {
-  min-height: 100vh;
+  padding: 2rem 1rem;
+  max-width: 1024px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.intro {
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 2rem 1rem;
+
+  .intro-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    background-color: var(--color-surface);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .intro-text {
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--color-on-surface-variant);
+      font-size: 1rem;
+    }
+  }
+
+  .intro-image {
+    flex-shrink: 0;
+    img {
+      width: 120px;
+      height: auto;
+    }
+  }
+}
+
+.card-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-outline);
   background-color: var(--color-surface);
   color: var(--color-on-surface);
-}
 
-.container {
-  max-width: 768px;
-  width: 100%;
-  text-align: center;
-  background-color: var(--color-surface-variant);
-  padding: 3rem 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
-.subtitle {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-  color: var(--color-on-surface-variant);
-}
-
-.cta-button {
-  display: inline-block;
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: var(--color-primary-container);
-    color: var(--color-on-primary-container);
+  .card-body {
+    background-color: var(--color-on-tertiary);
+    color: var(--color-on-tertiary);
+    border-radius: 0 0 12px 12px;
+    padding: 1rem 1.25rem;
   }
+}
+
+.card-header {
+  background-color: var(--color-surface-variant);
+  padding: 1rem 1.25rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-on-tertiary-container);
+  border-bottom: 1px solid var(--color-outline);
 }
 </style>
