@@ -91,7 +91,9 @@ const goChangePw = () => {
 
 const closeModal = () => {
   showModal.value = false;
-  errorMessage.value = ""; // 모달 닫을 때 에러 메시지 초기화
+  currentPassword.value = ""; // 입력값 초기화
+  newPassword.value = ""; // 입력값 초기화
+  errorMessage.value = ""; // 에러 메시지 초기화
 };
 
 const changePassword = async () => {
