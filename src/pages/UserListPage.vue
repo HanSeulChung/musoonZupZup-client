@@ -101,6 +101,12 @@ const page = ref(1);
 const size = 10;
 
 const fetchUsers = async () => {
+  if (!searchKey.value && searchValue.value) {
+    // 전체 검색은 나중에 필요하면 추가
+    alert("검색할 범위를 선택해주세요.");
+    return;
+  }
+
   try {
     const response = await api.get("/admin/members", {
       params: {
