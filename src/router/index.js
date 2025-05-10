@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '@/pages/HomePage.vue' 
 import RegisterPage from '@/pages/RegisterPage.vue' 
 import LoginPage from '@/pages/LoginPage.vue' 
-import MyPage from '@/pages/MyPage.vue' 
+import MyPage from '@/pages/MyPage.vue'
+import UserListPage from '@/pages/UserListPage.vue' 
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
     path: '/mypage', 
     name: 'MyPage',
     component: MyPage,
+  },
+    { 
+    path: '/admin/members', 
+    name: 'UserListPage',
+    component: UserListPage,
   },
   // 추가 페이지도 여기에 등록 가능
 ]
