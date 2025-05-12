@@ -55,8 +55,12 @@ const handleLogin = async () => {
         alert('로그인 성공')
         router.push('/')
     } catch (err) {
-        alert('로그인 실패: 아이디 또는 비밀번호를 확인해주세요.')
-    }
+        console.log(err);
+        if (err.response?.status === 400) {
+            alert('로그인 실패: 아이디 또는 비밀번호를 확인해주세요.');
+        }
+        // 다른 에러는 인터셉터에서 처리됨 (403, 401 등)
+        }
 }
 </script>
 
