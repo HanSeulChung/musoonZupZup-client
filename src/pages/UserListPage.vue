@@ -13,7 +13,7 @@
           <option value="role">권한</option>
         </select>
         <input v-model="searchValue" placeholder="검색어 입력" />
-        <button @click="fetchUsers">검색</button>
+        <button @click="search">검색</button>
 
         <select v-model="sortKey">
           <option value="createdAt">가입일</option>
@@ -23,7 +23,7 @@
           <option value="ASC">오름차순</option>
           <option value="DESC">내림차순</option>
         </select>
-        <button @click="fetchUsers">정렬 조회</button>
+        <button @click="sort">정렬 조회</button>
       </div>
 
       <p class="summary">총 사용자 {{ totalUsers }}명</p>
@@ -101,6 +101,17 @@ const sortValue = ref("DESC");
 
 const page = ref(1);
 const size = 10;
+
+const search = () => {
+  page.value = 1; // 페이지 초기화
+  fetchUsers();   // 유저 목록 새로 가져오기
+};
+
+const sort = () => {
+  page.value = 1;
+  fetchUsers();
+};
+
 
 const fetchUsers = async () => {
   if (!searchKey.value && searchValue.value) {
