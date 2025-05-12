@@ -51,7 +51,7 @@ const handleLogin = async () => {
             }, {
             withCredentials: true 
         });
-        authStore.login(res.data.accessToken)
+        authStore.login(res.data.accessToken, res.data.role)
         alert('로그인 성공')
         router.push('/')
     } catch (err) {

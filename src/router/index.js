@@ -46,16 +46,24 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const isLoggedIn = authStore.isLoggedIn
+  const userRole = authStore.role
 
-  if (to.meta.requiresAuth && !isLoggedIn) {
+    if (to.meta.requiresAuth && !isLoggedIn) {
     alert('로그인이 필요합니다.')
-    next('/login')
-  } else if (to.meta.requiresUnauth && isLoggedIn) {
-    alert('이미 로그인되어 있습니다. 진행하려면 로그아웃 후 다시 시도해주세요.')
-    next('/')
-  } else {
-    next()
+    return next('/login')
   }
+
+  if (to.meta.requiresUnauth && isLoggedIn) {
+    alert('이미 로그인되어 있습니다. 진행하려면 로그아웃 후 다시 시도해주세요.')
+    return next('/')
+  }
+
+  if (to.meta.roles && !to.meta.roles.includes(userRole)) {
+    alert('접근 권한이 없습니다.')
+    return next('/')
+  }
+
+  next()
 })
 
 export default router
