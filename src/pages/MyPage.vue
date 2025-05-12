@@ -58,11 +58,13 @@ const router = useRouter();
 
 const allActions = {
   USER: [
+    { label: "내 장소 등록하기", path: "/mypage/places" },
     { label: "찜한 공고 보러가기", path: "/favorites" },
     { label: "내가 쓴 글 보러가기", path: "/myposts" },
   ],
   MEMBERSHIP: [
-    { label: "gpt 내역 확인하기기", path: "/gptlists" },
+    { label: "내 장소 등록하기", path: "/mypage/places" },
+    { label: "gpt 내역 확인하기", path: "/mypage/gpt" },
     { label: "찜한 공고 보러가기", path: "/favorites" },
     { label: "내가 쓴 글 보러가기", path: "/myposts" },
   ],
