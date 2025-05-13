@@ -3,7 +3,7 @@
         <router-link
             v-for="post in displayedPosts"
             :key="post.id"
-            :to="`/posts/${post.id}`"
+            :to="`/communities/${post.id}`"
             class="post-item"
             >
             <h4>{{ post.title }}</h4>

@@ -21,7 +21,7 @@
           <router-link to="/apply-homes" class="view-more">전체 보기 →</router-link>
         </div>
         <div class="card-body">
-          <NoticeList :type="'latest'" :limit="3" />
+          <ApplyHomeList :type="'latest'" :limit="3" />
         </div>
       </div>
 
@@ -32,7 +32,7 @@
         </div>
         <div class="card-body">
           <!-- TODO: 찜 기능 추가 후 back이랑 연동 -->
-          <NoticeList :type="'popular'" :limit="3" />
+          <ApplyHomeList :type="'popular'" :limit="3" />
         </div>
       </div>
 
@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import NoticeList from '@/components/NoticeList.vue'
+import ApplyHomeList from '@/components/ApplyHomeList.vue'
 import PostList from '@/components/PostList.vue'
 </script>
 
