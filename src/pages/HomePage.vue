@@ -17,7 +17,9 @@
     <div class="card-section">
       <!-- 2. 최신 청약 공고 BEST 3 -->
       <div class="section-card latest">
-        <div class="card-header">🆕 최신 청약 공고</div>
+        <div class="card-header">🆕 최신 청약 공고  
+          <router-link to="/apply-homes" class="view-more">전체 보기 →</router-link>
+        </div>
         <div class="card-body">
           <NoticeList :type="'latest'" :limit="3" />
         </div>
@@ -25,16 +27,20 @@
 
       <!-- 3. 인기 청약 공고 BEST 3 -->
       <div class="section-card popular">
-        <div class="card-header">🔥 인기 청약 공고</div>
+        <div class="card-header">🔥 인기 청약 공고
+          <router-link to="/apply-homes" class="view-more">전체 보기 →</router-link>
+        </div>
         <div class="card-body">
-         <!-- TODO: 찜 기능 추가 후 back이랑 연동 -->
+          <!-- TODO: 찜 기능 추가 후 back이랑 연동 -->
           <NoticeList :type="'popular'" :limit="3" />
         </div>
       </div>
 
       <!-- 4. 인기 커뮤니티 게시글 BEST 3 -->
       <div class="section-card posts">
-        <div class="card-header">💬 인기 커뮤니티 게시글</div>
+        <div class="card-header">💬 인기 커뮤니티 게시글
+          <router-link to="/communities" class="view-more">전체 보기 →</router-link>
+        </div>
         <div class="card-body">
           <PostList :type="'popular'" :limit="3" />
         </div>
@@ -119,11 +125,27 @@ import PostList from '@/components/PostList.vue'
 }
 
 .card-header {
+  display: flex;
+  justify-content: space-between; // ← 좌우 정렬!
+  align-items: center;
+
   background-color: var(--color-surface-variant);
   padding: 1rem 1.25rem;
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--color-on-tertiary-container);
   border-bottom: 1px solid var(--color-outline);
+
+  .view-more {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-on-primary-container);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
+
 </style>
