@@ -1,6 +1,7 @@
 // src/libs/axios.js
 import axios from 'axios'
-import router from '@/router' 
+import router from '@/router'
+import { useAuthStore } from '@/stores/auth' 
 
 const instance = axios.create({
     baseURL: 'http://localhost:8080',
@@ -12,21 +13,45 @@ const instance = axios.create({
 
 instance.interceptors.response.use(
     response => response,
-    error => {
+    async error => {
+        const authStore = useAuthStore()
+        const originalRequest = error.config
+
         if (error.response) {
-        const serverMessage = error.response.data?.message || '';
-        console.log(serverMessage);
-        if (error.response.status === 403) {
-            alert(serverMessage || '이 요청은 거부되었습니다.');
-            router.push('/');
-        } else if (error.response.status === 401) {
-            alert(serverMessage || '접근이 허용되지 않았습니다.');
-            router.push('/');
+        const status = error.response.status
+        const serverMessage = error.response.data?.message || ''
+
+        // access token 만료 (403) 처리
+        if (status === 403 && !originalRequest._retry) {
+            try {
+            originalRequest._retry = true
+            const res = await axios.post('http://localhost:8080/auth/refresh-token', null, {
+                withCredentials: true
+            })
+
+            const newAccessToken = res.data.accessToken
+            authStore.login(newAccessToken, authStore.role)
+
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+            return instance(originalRequest)
+            } catch (refreshErr) {
+            alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+            authStore.logout()
+            router.push('/login')
+            return Promise.reject(refreshErr)
+            }
+        }
+
+        // 기타 인증 실패
+        if (status === 401) {
+            alert(serverMessage || '접근이 허용되지 않았습니다.')
+            router.push('/')
         }
         }
-        return Promise.reject(error);
+
+        return Promise.reject(error)
     }
-);
+)
 
 
 export default instance
