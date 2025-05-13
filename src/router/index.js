@@ -28,13 +28,31 @@ const routes = [
     path: '/mypage', 
     name: 'MyPage',
     component: MyPage,
+    meta: { requiresAuth: true }
   },
     { 
     path: '/admin/members', 
     name: 'UserListPage',
     component: UserListPage,
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] }
   },
+  // {
+  //   path: '/admin/announcement',
+  //   component: AnnouncementWritePage,
+  //   meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] }
+  // },
+  // {
+  //   path: '/gptlists',
+  //   component: GptHistoryPage,
+  //   meta: { requiresAuth: true, roles: ['MEMBERSHIP'] }
+  // },
+  // {
+  //   path: '/mypage/places',
+  //   component: MyPlacePage,
+  //   meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
+  // }
   // 추가 페이지도 여기에 등록 가능
+  
 ]
 
 const router = createRouter({
