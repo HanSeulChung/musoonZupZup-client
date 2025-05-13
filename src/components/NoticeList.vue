@@ -2,27 +2,52 @@
     <div class="notice-list">
         <router-link
         v-for="notice in displayedNotices"
-        :key="notice.id"
-        :to="`/notices/${notice.id}`"
+        :key="notice.idx"
+        :to="`/notices/${notice.idx}`"
         class="notice-item"
         >
-        <strong>{{ notice.title }}</strong><br />
-        {{ notice.location }} | {{ notice.date }}
+        <strong>{{ notice.houseName }}</strong><br />
+        {{ notice.houseAddress }} | {{ formatDate(notice.pblancDate) }}
         </router-link>
     </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import api from '@/libs/axios'
+
 const props = defineProps({ type: String, limit: Number })
 
-const allNotices = [
-    { id: 1, title: '서울 A단지', location: '강남구', date: '2025-05-01' },
-    { id: 2, title: '부산 B단지', location: '해운대구', date: '2025-04-28' },
-    { id: 3, title: '인천 C단지', location: '연수구', date: '2025-04-25' }
-]
+const allNotices = ref([])
 
-const displayedNotices = computed(() => allNotices.slice(0, props.limit))
+const fetchNotices = async () => {
+    try {
+        // 공고 유형 분기 처리
+        let url = '/applyhome/list/top3/pblanc_date'
+        if (props.type === 'latest') {
+            url = '/applyhome/list/top3/pblanc_date'
+        } 
+        else if (props.type === 'popular') {
+            url = '/applyhome/list/top3/view' 
+        }
+
+        const res = await api.get(url)
+        allNotices.value = res.data
+    } catch (err) {
+        console.error('공고 조회 실패:', err)
+    }
+}
+
+const formatDate = (dateStr) => {
+    const date = new Date(dateStr)
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+}
+
+const displayedNotices = computed(() => {
+    return allNotices.value.slice(0, props.limit)
+})
+
+onMounted(fetchNotices)
 </script>
 
 <style scoped lang="scss">
@@ -38,7 +63,8 @@ const displayedNotices = computed(() => allNotices.slice(0, props.limit))
     text-decoration: none;
     color: var(--color-on-surface);
     transition: background-color 0.2s;
-}
+    }
+
 .notice-item:hover {
     background-color: var(--color-secondary-container);
     color: var(--color-on-secondary-container);

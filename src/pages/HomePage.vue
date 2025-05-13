@@ -27,6 +27,7 @@
       <div class="section-card popular">
         <div class="card-header">🔥 인기 청약 공고</div>
         <div class="card-body">
+         <!-- TODO: 찜 기능 추가 후 back이랑 연동 -->
           <NoticeList :type="'popular'" :limit="3" />
         </div>
       </div>
