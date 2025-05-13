@@ -37,7 +37,7 @@ instance.interceptors.response.use(
             } catch (refreshErr) {
             alert('세션이 만료되었습니다. 다시 로그인해주세요.')
             authStore.logout()
-            router.push('/login')
+            router.replace('/login') // router.push랑 다름
             return Promise.reject(refreshErr)
             }
         }
