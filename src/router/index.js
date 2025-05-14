@@ -43,6 +43,11 @@ const routes = [
     name: 'ApplyHomePage',
     component: ApplyHomePage,
   },
+  { 
+    path: '/apply-homes/:id', 
+    name: 'ApplyHomeDetail',
+    component: ApplyHomeDetail,
+  },
   // 추가 페이지도 여기에 등록 가능
   
 ]
