@@ -3,7 +3,7 @@
         <router-link
         v-for="notice in displayedNotices"
         :key="notice.idx"
-        :to="`/notices/${notice.idx}`"
+        :to="`/apply-homes/${notice.idx}`"
         class="notice-item"
         >
         <strong>{{ notice.houseName }}</strong><br />
