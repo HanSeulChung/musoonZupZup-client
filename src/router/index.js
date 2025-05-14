@@ -4,6 +4,8 @@ import RegisterPage from '@/pages/RegisterPage.vue'
 import LoginPage from '@/pages/LoginPage.vue' 
 import MyPage from '@/pages/MyPage.vue'
 import UserListPage from '@/pages/UserListPage.vue' 
+import ApplyHomePage from '@/pages/ApplyHomePage.vue' 
+import ApplyHomeDetail from '@/pages/ApplyHomeDetail.vue' 
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -36,21 +38,11 @@ const routes = [
     component: UserListPage,
     meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] }
   },
-  // {
-  //   path: '/admin/announcement',
-  //   component: AnnouncementWritePage,
-  //   meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] }
-  // },
-  // {
-  //   path: '/gptlists',
-  //   component: GptHistoryPage,
-  //   meta: { requiresAuth: true, roles: ['MEMBERSHIP'] }
-  // },
-  // {
-  //   path: '/mypage/places',
-  //   component: MyPlacePage,
-  //   meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
-  // }
+  { 
+    path: '/apply-homes', 
+    name: 'ApplyHomePage',
+    component: ApplyHomePage,
+  },
   // 추가 페이지도 여기에 등록 가능
   
 ]
