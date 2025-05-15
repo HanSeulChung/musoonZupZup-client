@@ -58,15 +58,24 @@ watch(
 );
 
 
-const fetchDetail = async () => {
-    const res = await api.get('/applyhome/detail', {
+const fetchDetailHome = async () => {
+    const res = await api.get('/applyhome/detail/apply', {
         params: {
         idx: route.params.id
         }
     });
     detail.value = res.data.pblanc;
-    gptComment.value = res.data.gptComment.comment;
 };
+
+const fetchDetailGpt = async () => {
+    const res = await api.get('/applyhome/detail/gpt', {
+        params: {
+        idx: route.params.id
+        }
+    });
+    gptComment.value = res.data.comment;
+};
+
 
 const formatDate = (str) => new Date(str).toLocaleDateString();
 
@@ -91,7 +100,9 @@ const loadMap = async () => {
     });
 };
 
-onMounted(fetchDetail);
+onMounted(async () => {
+    await Promise.all([fetchDetailHome(), fetchDetailGpt()]);
+});
 </script>
 
 <style scoped lang="scss">
