@@ -7,6 +7,8 @@ import UserListPage from '@/pages/UserListPage.vue'
 import ApplyHomePage from '@/pages/ApplyHomePage.vue' 
 import ApplyHomeDetail from '@/pages/ApplyHomeDetail.vue' 
 import CommunityList from '@/pages/CommunityList.vue' 
+import CommunityDetail from '@/pages/CommunityDetail.vue'
+
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -53,6 +55,11 @@ const routes = [
     path: '/communities', 
     name: 'CommunityList',
     component: CommunityList,
+  },
+  { 
+    path: '/communities/:id', 
+    name: 'CommunityDetail',
+    component: CommunityDetail,
   },
   // 추가 페이지도 여기에 등록 가능
   
