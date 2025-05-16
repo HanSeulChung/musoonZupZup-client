@@ -2,6 +2,7 @@
     <div class="community-detail-container">
         <CommunityContent
         class="section-box"
+        v-if="detail && detail.idx"
         :detail="detail"
         :myReaction="myReaction"
         :reaction="reaction"

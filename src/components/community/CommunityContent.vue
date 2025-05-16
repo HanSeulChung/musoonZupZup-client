@@ -39,6 +39,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
+import api from '@/libs/axios'
+
 
 const props = defineProps({
     detail: Object,
@@ -49,8 +52,13 @@ const props = defineProps({
 const emit = defineEmits(['update-reaction'])
 
 const authStore = useAuthStore()
+const router = useRouter()
 const isMyPost = computed(() => props.detail?.memberId === authStore.memberId)
 
+const communityIdx = props.detail?.idx;
+console.log("communityIdx: ", communityIdx);
+
+console.log(props.detail)
 const formatDate = (dateStr) => {
     const date = new Date(dateStr)
     return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
@@ -61,11 +69,21 @@ const formattedContent = computed(() =>
 )
 
 const onEdit = () => {
-  // 수정 기능은 추후 구현
+  // 수정 페이지로 이동
+    router.push(`/community/edit/${communityIdx}`)
 }
 
-const onDelete = () => {
-  // 삭제 기능은 추후 구현
+const onDelete = async () => {
+    if (!confirm('정말 게시물을 삭제하시겠습니까?')) return
+
+    try {
+        await api.put(`/community/member/delete/${communityIdx}`)
+        alert('게시물이 삭제되었습니다.')
+        router.push('/communities')
+    } catch (err) {
+        console.error('게시물 삭제 실패:', err)
+        alert('게시물 삭제 중 오류가 발생했습니다.')
+    }
 }
 </script>
 
