@@ -1,35 +1,35 @@
 <template>
-  <section class="community-page">
-    <div class="header-with-button">
-      <h2 class="page-title">커뮤니티 게시글</h2>
-      <button class="create-btn" @click="goToCreatePage">게시글 작성하기</button>
-    </div>
-
-    <div class="post-list">
-      <div class="post-card" v-for="post in posts.content" :key="post.idx">
-        <div class="card-left">
-          <h3 class="title">
-            <router-link :to="`/communities/${post.idx}`">{{ post.title }}</router-link>
-          </h3>
-          <div class="stats">
-            <span>조회수 {{ post.views }}</span>
-            <span>댓글수 {{ post.commentCnt }}</span>
-            <span>좋아요 {{ post.like }}</span>
-            <span>싫어요 {{ post.disLike }}</span>
-          </div>
+    <section class="community-page">
+        <div class="header-with-button">
+        <h2 class="page-title">커뮤니티 게시글</h2>
+        <button class="create-btn" @click="goToCreatePage">게시글 작성하기</button>
         </div>
-        <div class="card-right">
-          <span class="date">{{ formatDate(post.createdAt) }}</span>
-        </div>
-      </div>
-    </div>
 
-    <div class="pagination">
-      <button :disabled="posts.first" @click="changePage(currentPage - 1)">이전</button>
-      <span>{{ currentPage + 1 }} / {{ posts.totalPages }}</span>
-      <button :disabled="posts.last" @click="changePage(currentPage + 1)">다음</button>
-    </div>
-  </section>
+        <div class="post-list">
+        <div class="post-card" v-for="post in posts.content" :key="post.idx">
+            <div class="card-left">
+            <h3 class="title">
+                <router-link :to="`/communities/${post.idx}`">{{ post.title }}</router-link>
+            </h3>
+            <div class="stats">
+                <span>조회수 {{ post.views }}</span>
+                <span>댓글수 {{ post.commentCnt }}</span>
+                <span>좋아요 {{ post.like }}</span>
+                <span>싫어요 {{ post.disLike }}</span>
+            </div>
+            </div>
+            <div class="card-right">
+            <span class="date">{{ formatDate(post.createdAt) }}</span>
+            </div>
+        </div>
+        </div>
+
+        <div class="pagination">
+        <button :disabled="posts.first" @click="changePage(currentPage - 1)">이전</button>
+        <span>{{ currentPage + 1 }} / {{ posts.totalPages }}</span>
+        <button :disabled="posts.last" @click="changePage(currentPage + 1)">다음</button>
+        </div>
+    </section>
 </template>
 
 <script setup>
