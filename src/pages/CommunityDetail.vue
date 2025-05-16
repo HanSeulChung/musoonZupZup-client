@@ -279,6 +279,7 @@ onMounted(() => {
     font-size: 1rem;
     line-height: 1.7;
     white-space: pre-wrap;
+    min-height: 200px; 
 }
 
 .comments {
