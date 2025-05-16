@@ -8,7 +8,7 @@ import ApplyHomePage from '@/pages/ApplyHomePage.vue'
 import ApplyHomeDetail from '@/pages/ApplyHomeDetailPage.vue' 
 import CommunityList from '@/pages/CommunityListPage.vue' 
 import CommunityDetail from '@/pages/CommunityDetailPage.vue'
-
+import CommunityCreate from '@/pages/CommunityCreatePage.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -35,7 +35,7 @@ const routes = [
     component: MyPage,
     meta: { requiresAuth: true }
   },
-    { 
+  { 
     path: '/admin/members', 
     name: 'UserListPage',
     component: UserListPage,
@@ -60,6 +60,11 @@ const routes = [
     path: '/communities/:id', 
     name: 'CommunityDetail',
     component: CommunityDetail,
+  },
+  { 
+    path: '/communities/create', 
+    name: 'CommunityCreate',
+    component: CommunityCreate,
   },
   // 추가 페이지도 여기에 등록 가능
   
