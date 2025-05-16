@@ -44,7 +44,7 @@
 
             <!-- 댓글 목록 -->
             <div v-if="comments.length === 0" class="no-comment">댓글이 없습니다.</div>
-                <ul v-else>
+            <ul v-else>
                 <li v-for="c in comments" :key="c.idx" class="comment-item">
                 <div class="comment-meta">
                     <span
@@ -56,9 +56,22 @@
                     <span class="date">{{ formatDateTime(c.createdAt) }}</span>
                 </div>
 
-                <div class="comment-text">{{ c.comment }}</div>
+                <!-- 수정 중일 때 -->
+                <div v-if="editingCommentId === c.idx" class="comment-edit-form">
+                    <textarea
+                    v-model="editingCommentText"
+                    rows="3"
+                    />
+                    <div class="edit-actions">
+                    <button @click="saveEditedComment(c.idx)">저장</button>
+                    <button @click="cancelEdit">취소</button>
+                    </div>
+                </div>
 
-                <div class="comment-actions" v-if="c.memberId === myMemberId">
+                <!-- 일반 표시 -->
+                <div v-else class="comment-text">{{ c.comment }}</div>
+
+                <div class="comment-actions" v-if="c.memberId === myMemberId && editingCommentId !== c.idx">
                     <button @click="editComment(c.idx)">수정</button>
                     <button @click="deleteComment(c.idx)">삭제</button>
                 </div>
@@ -196,8 +209,36 @@ const submitComment = async () => {
     }
 };
 
+const editingCommentId = ref(null)         // 현재 수정 중인 댓글 ID
+const editingCommentText = ref('')  
+
 const editComment = (commentIdx) => {
-    //TODO:
+    const target = comments.value.find(c => c.idx === commentIdx)
+    if (target) {
+        editingCommentId.value = commentIdx
+        editingCommentText.value = target.comment
+    }
+}
+
+const cancelEdit = () => {
+    editingCommentId.value = null
+    editingCommentText.value = ''
+}
+
+const saveEditedComment = async (commentIdx) => {
+    if (!editingCommentText.value.trim()) return alert('댓글 내용을 입력해주세요.')
+
+    try {
+        await api.put(`/community/member/comment/edit/${commentIdx}`, {
+            comment: editingCommentText.value,
+            memberId: myMemberId.value
+        })
+        editingCommentId.value = null
+        editingCommentText.value = ''
+        await fetchComments()
+    } catch (err) {
+        console.error('댓글 수정 실패:', err)
+    }
 }
 
 const deleteComment = async (commentIdx) => {
@@ -394,23 +435,58 @@ onMounted(() => {
             margin-top: 0.3rem;
         }
 
+        .comment-edit-form {
+            margin-top: 0.5rem;
+
+            textarea {
+                width: 100%;
+                resize: none;
+                border: 1px solid var(--color-outline);
+                border-radius: 6px;
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            .edit-actions {
+                margin-top: 0.5rem;
+                display: flex;
+                gap: 0.5rem;
+                justify-content: flex-end;
+
+                button {
+                background-color: var(--color-primary-container);
+                color: var(--color-on-primary-container);
+                border: none;
+                padding: 0.3rem 0.8rem;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: var(--color-primary);
+                    color: white;
+                }
+                }
+            }
+        }
+
         .comment-actions {
             margin-top: 0.3rem;
             display: flex;
             gap: 0.5rem;
             justify-content: flex-end;
             button {
-            background: none;
-            border: none;
-            font-size: 0.8rem;
-            color: var(--color-secondary);
-            cursor: pointer;
+                background: none;
+                border: none;
+                font-size: 0.8rem;
+                color: var(--color-secondary);
+                cursor: pointer;
 
-            &:hover {
-                text-decoration: underline;
-            }
+                &:hover {
+                    text-decoration: underline;
+                }
             }
         }
-        }
+    }
 }
 </style>
