@@ -52,7 +52,7 @@ instance.interceptors.response.use(
             })
 
             const newAccessToken = res.data.accessToken
-            authStore.login(newAccessToken, authStore.role)
+            authStore.login(newAccessToken, authStore.role, authStore.memberId)
 
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
             return instance(originalRequest)
