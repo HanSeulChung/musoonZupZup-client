@@ -5,29 +5,33 @@ export const useAuthStore = defineStore('auth', () => {
     const isLoggedIn = ref(false)
     const accessToken = ref(null)
     const role = ref(null)
+    const memberId = ref(null);
 
-    function login(token, userRole) {
+    function login(token, userRole, userId) {
         accessToken.value = token
         isLoggedIn.value = true
         role.value = userRole
+        memberId.value = userId
     }
 
     function logout() {
         accessToken.value = null
         isLoggedIn.value = false
         role.value = null
+        memberId.value = null
     }
 
     return {
         isLoggedIn,
         accessToken,
         role,
+        memberId,
         login,
         logout
     }
     }, {
     persist: {
-        paths: ['accessToken', 'isLoggedIn', 'role'],
+        paths: ['accessToken', 'isLoggedIn', 'role', 'memberId'],
         storage: localStorage
     }
 })
