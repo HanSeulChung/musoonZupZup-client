@@ -44,14 +44,25 @@
 
             <!-- 댓글 목록 -->
             <div v-if="comments.length === 0" class="no-comment">댓글이 없습니다.</div>
-            <ul v-else>
-            <li v-for="c in comments" :key="c.idx" class="comment-item">
+                <ul v-else>
+                <li v-for="c in comments" :key="c.idx" class="comment-item">
                 <div class="comment-meta">
-                <span class="writer">{{ c.memberId }}</span>
-                <span class="date">{{ formatDate(c.createdAt) }}</span>
+                    <span
+                    class="writer"
+                    :class="{ admin: c.role === 'ADMIN' || c.role === 'MASTER' }"
+                    >
+                    {{ c.role === 'ADMIN' || c.role === 'MASTER' ? '관리자' : c.memberId }}
+                    </span>
+                    <span class="date">{{ formatDateTime(c.createdAt) }}</span>
                 </div>
+
                 <div class="comment-text">{{ c.comment }}</div>
-            </li>
+
+                <div class="comment-actions" v-if="c.memberId === myMemberId">
+                    <button @click="editComment(c.idx)">수정</button>
+                    <button @click="deleteComment(c.idx)">삭제</button>
+                </div>
+                </li>
             </ul>
         </div>
         <!-- 댓글 영역 끝 -->
@@ -71,6 +82,7 @@ const route = useRoute()
 const detail = ref({})
 
 const communityIdx = route.params.id;
+const myMemberId = ref(authStore.memberId || '')
 
 const fetchDetail = async () => {
     try {
@@ -132,6 +144,7 @@ const handleReaction = async (flag) => {
         await api.post(`/community/member/likeDisLike/${communityIdx}`, {
             likeFlag: flag
         });
+
         myReaction.value = flag;
         }
 
@@ -146,24 +159,15 @@ const handleReaction = async (flag) => {
 const comments = ref([]);
 const newComment = ref('');
 
-const submitComment = async () => {
-    if (!authStore.isLoggedIn) {
-        alert('로그인이 필요합니다.');
-        router.push('/login');
-        return;
-    }
-
-    if (!newComment.value.trim()) return;
-    try {
-        await api.post(`/community/${communityIdx}/comment`, {
-        comment: newComment.value
-        });
-        newComment.value = '';
-        await fetchComments(); // 댓글 다시 불러오기
-    } catch (err) {
-        console.error('댓글 등록 실패:', err);
-    }
-};
+const formatDateTime = (dateStr) => {
+    const date = new Date(dateStr)
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, '0')
+    const dd = String(date.getDate()).padStart(2, '0')
+    const hh = String(date.getHours()).padStart(2, '0')
+    const min = String(date.getMinutes()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`
+}
 
 const fetchComments = async () => {
     try {
@@ -173,6 +177,38 @@ const fetchComments = async () => {
         console.error('댓글 불러오기 실패:', err);
     }
 };
+const submitComment = async () => {
+    if (!authStore.isLoggedIn) {
+        alert('로그인이 필요합니다.');
+        router.push('/login');
+        return;
+    }
+
+    if (!newComment.value.trim()) return;
+    try {
+        await api.post(`/community/member/comment/${communityIdx}`, {
+        comment: newComment.value
+        });
+        newComment.value = '';
+        await fetchComments(); // 댓글 다시 불러오기
+    } catch (err) {
+        console.error('댓글 등록 실패:', err);
+    }
+};
+
+const editComment = (commentIdx) => {
+    //TODO:
+}
+
+const deleteComment = async (commentIdx) => {
+    if (!confirm('댓글을 삭제하시겠습니까?')) return
+    try {
+        await api.put(`/community/member/comment/delete/${commentIdx}`)
+        await fetchComments()
+    } catch (err) {
+        console.error('댓글 삭제 실패:', err)
+    }
+}
 
 onMounted(() => {
     fetchDetail();
@@ -336,17 +372,45 @@ onMounted(() => {
         border-bottom: 1px solid var(--color-outline);
 
         .comment-meta {
-        font-size: 0.85rem;
-        color: var(--color-on-surface-variant);
-        margin-bottom: 0.2rem;
-        display: flex;
-        gap: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--color-on-surface-variant);
+
+            .writer {
+                font-weight: bold;
+                color: var(--color-primary);
+
+                &.admin {
+                    color: var(--color-on-surface); 
+                }
+            }
         }
 
         .comment-text {
-        font-size: 0.95rem;
-        color: var(--color-on-surface);
+            font-size: 0.95rem;
+            color: var(--color-on-surface);
+            margin-top: 0.3rem;
         }
-    }
+
+        .comment-actions {
+            margin-top: 0.3rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            button {
+            background: none;
+            border: none;
+            font-size: 0.8rem;
+            color: var(--color-secondary);
+            cursor: pointer;
+
+            &:hover {
+                text-decoration: underline;
+            }
+            }
+        }
+        }
 }
 </style>
