@@ -11,6 +11,28 @@ const instance = axios.create({
     withCredentials: true
 })
 
+// 요청 인터셉터: 로그인 상태면 Authorization 자동 추가
+instance.interceptors.request.use((config) => {
+    const authData = localStorage.getItem('auth');
+    let token = null;
+
+    if (authData) {
+    try {
+        const parsed = JSON.parse(authData);
+        token = parsed.accessToken;
+    } catch (e) {
+        console.error('auth 파싱 실패:', e);
+    }
+    }
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
+
+// 응답 인터셉터: 403 에러 받으면 (access token이 유효하지 않다고 하면,)
+// 토큰 재발급으로 요청
 instance.interceptors.response.use(
     response => response,
     async error => {
