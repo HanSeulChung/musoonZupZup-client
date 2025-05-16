@@ -5,9 +5,9 @@ import LoginPage from '@/pages/LoginPage.vue'
 import MyPage from '@/pages/MyPage.vue'
 import UserListPage from '@/pages/UserListPage.vue' 
 import ApplyHomePage from '@/pages/ApplyHomePage.vue' 
-import ApplyHomeDetail from '@/pages/ApplyHomeDetail.vue' 
+import ApplyHomeDetail from '@/pages/ApplyHomeDetailPage.vue' 
 import CommunityList from '@/pages/CommunityListPage.vue' 
-import CommunityDetail from '@/pages/CommunityDetail.vue'
+import CommunityDetail from '@/pages/CommunityDetailPage.vue'
 
 import { useAuthStore } from '@/stores/auth'
 
