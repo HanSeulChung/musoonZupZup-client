@@ -17,8 +17,11 @@
     <div class="card-section">
       <!-- 2. 최신 청약 공고 BEST 3 -->
       <div class="section-card latest">
-        <div class="card-header">🆕 최신 청약 공고  
-          <router-link to="/apply-homes" class="view-more">전체 보기 →</router-link>
+        <div class="card-header">
+          🆕 최신 청약 공고
+          <router-link to="/apply-homes" class="view-more"
+            >전체 보기 →</router-link
+          >
         </div>
         <div class="card-body">
           <ApplyHomeList :type="'latest'" :limit="3" />
@@ -27,8 +30,11 @@
 
       <!-- 3. 인기 청약 공고 BEST 3 -->
       <div class="section-card popular">
-        <div class="card-header">🔥 인기 청약 공고
-          <router-link to="/apply-homes" class="view-more">전체 보기 →</router-link>
+        <div class="card-header">
+          🔥 인기 청약 공고
+          <router-link to="/apply-homes" class="view-more"
+            >전체 보기 →</router-link
+          >
         </div>
         <div class="card-body">
           <!-- TODO: 찜 기능 추가 후 back이랑 연동 -->
@@ -38,8 +44,11 @@
 
       <!-- 4. 인기 커뮤니티 게시글 BEST 3 -->
       <div class="section-card posts">
-        <div class="card-header">💬 인기 커뮤니티 게시글
-          <router-link to="/communities" class="view-more">전체 보기 →</router-link>
+        <div class="card-header">
+          💬 인기 커뮤니티 게시글
+          <router-link to="/communities" class="view-more"
+            >전체 보기 →</router-link
+          >
         </div>
         <div class="card-body">
           <PostList :type="'popular'" :limit="3" />
@@ -50,12 +59,12 @@
 </template>
 
 <script setup>
-import ApplyHomeList from '@/components/ApplyHomeList.vue'
-import PostList from '@/components/PostList.vue'
+import ApplyHomeList from "@/components/homepage/ApplyHomeList.vue";
+import PostList from "@/components/homepage/PostList.vue";
 </script>
 
 <style scoped lang="scss">
-@use '@/styles/theme' as *;
+@use "@/styles/theme" as *;
 
 .home {
   padding: 2rem 1rem;
@@ -147,5 +156,4 @@ import PostList from '@/components/PostList.vue'
     }
   }
 }
-
 </style>
