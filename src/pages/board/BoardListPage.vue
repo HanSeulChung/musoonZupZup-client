@@ -4,7 +4,8 @@
       <h2 class="page-title">
         {{ boardType === "notice" ? "공지사항" : "커뮤니티 게시글" }}
       </h2>
-      <button class="create-btn" @click="goToCreatePage">
+
+      <button v-if="canWrite" class="create-btn" @click="goToCreatePage">
         {{ boardType === "notice" ? "공지사항 작성하기" : "게시글 작성하기" }}
       </button>
     </div>
@@ -43,18 +44,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/libs/axios";
+
+const auth = useAuthStore();
+const { role, isLoggedIn } = storeToRefs(auth);
 
 const props = defineProps({
   boardType: { type: String, required: true }, // 'community' or 'notice'
 });
 
 const router = useRouter();
-const authStore = useAuthStore();
-const boardTypeUrl = props.boardType === "notice" ? "notices" : "communities";
+const boardTypeUrl = computed(() => {
+  return props.boardType === "notice" ? "notices" : "communities";
+});
+
+// 게시글 작성 버튼을 보여줄지 여부
+const canWrite = computed(() => {
+  if (!isLoggedIn.value) return false;
+  if (props.boardType === "notice") {
+    return role.value === "ADMIN" || role.value === "MASTER";
+  }
+  if (props.boardType === "community") {
+    return role.value === "USER" || role.value === "MEMBERSHIP";
+  }
+  return false;
+});
 
 const posts = ref({
   content: [],
@@ -87,7 +105,7 @@ const changePage = (page) => {
 const formatDate = (str) => new Date(str).toLocaleDateString();
 
 const goToCreatePage = () => {
-  if (!authStore.isLoggedIn) {
+  if (!auth.isLoggedIn) {
     alert("로그인이 필요합니다.");
     router.push("/login");
   } else {

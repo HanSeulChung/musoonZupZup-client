@@ -1,6 +1,6 @@
 <template>
   <div class="community-editor">
-    <h2>게시물 작성</h2>
+    <h2>{{ boardType === "notice" ? "공지사항 작성" : "게시물 작성" }}</h2>
     <input
       v-model="title"
       placeholder="제목을 입력하세요"
@@ -13,19 +13,42 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
-import { useRouter } from "vue-router";
 import api from "@/libs/axios";
+import { useAuthStore } from "@/stores/auth";
+
+const route = useRoute();
+const router = useRouter();
+const boardType = route.path.includes("/notices") ? "notice" : "community";
+
+const auth = useAuthStore();
+const { role, isLoggedIn } = storeToRefs(auth);
 
 const title = ref("");
 const content = ref("");
 const quillEditor = ref(null);
 let quillInstance = null;
 
-const router = useRouter();
-
 onMounted(() => {
+  if (!isLoggedIn.value) {
+    alert("로그인이 필요합니다.");
+    router.push("/login");
+    return;
+  }
+
+  // 자유 게시판은 일반 사용자만, 공지사항은 관리자만 가능
+  if (
+    (boardType === "notice" && !(role === "ADMIN" || role === "MASTER")) ||
+    (boardType === "community" && role !== "USER")
+  ) {
+    alert("작성 권한이 없습니다.");
+    router.push("/");
+    return;
+  }
+
   quillInstance = new Quill(quillEditor.value, {
     theme: "snow",
     placeholder: "내용을 입력하세요",
@@ -48,13 +71,17 @@ const submitPost = async () => {
     return;
   }
 
+  const endpoint =
+    boardType === "notice" ? "/notice/member/post" : "/community/member/post";
+  const redirectPath = boardType === "notice" ? "/notices" : "/communities";
+
   try {
-    await api.post("/community/member/post", {
+    await api.post(endpoint, {
       title: title.value,
       content: content.value,
     });
     alert("게시물이 등록되었습니다.");
-    router.push("/communities");
+    router.push(redirectPath);
   } catch (err) {
     console.error("게시물 작성 실패:", err);
     alert("등록 중 오류가 발생했습니다.");
@@ -89,6 +116,12 @@ h2 {
 .quill-editor {
   height: 300px;
   margin-bottom: 1.5rem;
+
+  img {
+    max-width: 300px;
+    display: block;
+    margin: 1rem auto;
+  }
 }
 
 button {

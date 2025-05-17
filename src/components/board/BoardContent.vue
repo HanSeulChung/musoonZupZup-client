@@ -1,6 +1,6 @@
 <template>
   <div class="detail-card">
-    <router-link to="/communities" class="back-link"
+    <router-link :to="listPath" class="back-link"
       >← 게시물 목록으로</router-link
     >
     <h2 class="title">{{ detail?.title || "제목 없음" }}</h2>
@@ -13,7 +13,7 @@
 
     <div class="content" v-html="formattedContent"></div>
 
-    <div class="reactions">
+    <div class="reactions" v-if="boardType === 'community'">
       <button
         class="reaction-btn"
         @click="$emit('update-reaction', 1)"
@@ -47,6 +47,10 @@ const props = defineProps({
   detail: Object,
   myReaction: Number,
   reaction: Object,
+  boardType: {
+    type: String,
+    default: "community", // 'notice' or 'community'
+  },
 });
 
 const emit = defineEmits(["update-reaction"]);
@@ -54,11 +58,13 @@ const emit = defineEmits(["update-reaction"]);
 const authStore = useAuthStore();
 const router = useRouter();
 const isMyPost = computed(() => props.detail?.memberId === authStore.memberId);
+const boardIdx = props.detail?.idx;
 
-const communityIdx = props.detail?.idx;
-console.log("communityIdx: ", communityIdx);
+const listPath = computed(
+  () => `/${props.boardType === "notice" ? "notices" : "communities"}`
+);
+const editPath = computed(() => `${listPath.value}/edit/${boardIdx}`);
 
-console.log(props.detail);
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
@@ -69,17 +75,16 @@ const formattedContent = computed(
 );
 
 const onEdit = () => {
-  // 수정 페이지로 이동
-  router.push(`/communities/edit/${communityIdx}`);
+  router.push(editPath.value);
 };
 
 const onDelete = async () => {
   if (!confirm("정말 게시물을 삭제하시겠습니까?")) return;
 
   try {
-    await api.put(`/community/member/delete/${communityIdx}`);
+    await api.put(`/${props.boardType}/member/delete/${boardIdx}`);
     alert("게시물이 삭제되었습니다.");
-    router.push("/communities");
+    router.push(listPath.value);
   } catch (err) {
     console.error("게시물 삭제 실패:", err);
     alert("게시물 삭제 중 오류가 발생했습니다.");

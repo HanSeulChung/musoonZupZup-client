@@ -1,6 +1,6 @@
 <template>
   <div class="community-editor">
-    <h2>게시물 수정</h2>
+    <h2>{{ boardType === "notice" ? "공지사항 수정" : "게시물 수정" }}</h2>
     <input
       v-model="title"
       placeholder="제목을 입력하세요"
@@ -20,20 +20,21 @@ import api from "@/libs/axios";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/stores/auth";
 
-const auth = useAuthStore();
-
 const route = useRoute();
 const router = useRouter();
 const communityIdx = Number(route.params.id);
+const boardType = route.path.includes("/notices/") ? "notice" : "community";
+
+const auth = useAuthStore();
 const { memberId } = storeToRefs(auth);
+
 const title = ref("");
 const content = ref("");
 const quillEditor = ref(null);
 let quillInstance = null;
 
-// 에디터 초기화 + 기존 게시물 데이터 불러오기
+// 에디터 초기화 및 기존 게시물 데이터 불러오기
 onMounted(async () => {
-  // Quill 에디터 먼저 초기화
   quillInstance = new Quill(quillEditor.value, {
     theme: "snow",
     placeholder: "내용을 입력하세요",
@@ -48,14 +49,14 @@ onMounted(async () => {
   });
 
   try {
-    const res = await api.get(`/community/${communityIdx}`);
+    const res = await api.get(`/${boardType}/${communityIdx}`);
     title.value = res.data.title;
     content.value = res.data.content;
     quillInstance.root.innerHTML = content.value;
   } catch (err) {
     console.error("게시물 불러오기 실패:", err);
     alert("게시물 정보를 불러오는 데 실패했습니다.");
-    router.push("/communities");
+    router.push(`/${boardType === "notice" ? "notices" : "communities"}`);
   }
 });
 
@@ -68,14 +69,16 @@ const submitEdit = async () => {
   }
 
   try {
-    await api.put(`/community/member/edit`, {
+    await api.put(`/${boardType}/member/edit`, {
       idx: communityIdx,
       memberId: memberId.value,
       title: title.value,
       content: content.value,
     });
     alert("게시물이 수정되었습니다.");
-    router.push(`/communities/${communityIdx}`);
+    router.push(
+      `/${boardType === "notice" ? "notices" : "communities"}/${communityIdx}`
+    );
   } catch (err) {
     console.error("게시물 수정 실패:", err);
     alert("수정 중 오류가 발생했습니다.");

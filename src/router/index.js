@@ -58,28 +58,49 @@ const routes = [
     component: BoardList,
     props: { boardType: 'community' }
   },
+
+  {
+    path: '/communities/:id',
+    name: 'CommunityDetail',
+    component: BoardDetail,
+    props: route => ({ boardType: 'community', id: Number(route.params.id) }) 
+  },
+  {
+    path: '/communities/create',
+    name: 'CommunityCreate',
+    component: BoardCreate,
+    props: { boardType: 'community' }
+  },
+  {
+    path: '/communities/edit/:id',
+    name: 'CommunityEdit',
+    component: BoardEdit,
+    props: route => ({ boardType: 'community', id: Number(route.params.id) })
+  },
   {
     path: '/notices',
     name: 'NoticeList',
     component: BoardList,
     props: { boardType: 'notice' }
   },
-
-  { 
-    path: '/communities/:id', 
-    name: 'CommunityDetail',
+  {
+    path: '/notices/:id',
+    name: 'NoticeDetail',
     component: BoardDetail,
-  },
-  { 
-    path: '/communities/create', 
-    name: 'CommunityCreate',
-    component: BoardCreate,
+    props: route => ({ boardType: 'notice', id: Number(route.params.id) })
   },
   {
-    path: '/communities/edit/:id',
-    name: 'CommunityEdit',
+    path: '/notices/create',
+    name: 'NoticeCreate',
+    component: BoardCreate,
+    props: { boardType: 'notice' }
+  },
+  {
+    path: '/notices/edit/:id',
+    name: 'NoticeEdit',
     component: BoardEdit,
-  }
+    props: route => ({ boardType: 'notice', id: Number(route.params.id) })
+  },
   // 추가 페이지도 여기에 등록 가능
   
 ]

@@ -1,17 +1,20 @@
+<!-- BoardDetailPage.vue -->
 <template>
-  <div class="community-detail-container">
+  <div class="board-detail-container">
     <BoardContent
       class="section-box"
       v-if="detail && detail.idx"
       :detail="detail"
       :myReaction="myReaction"
       :reaction="reaction"
+      :boardType="boardType"
       @updateReaction="handleReaction"
     />
 
     <CommentSection
       class="section-box"
-      :communityIdx="Number(communityIdx)"
+      v-if="boardType === 'community'"
+      :communityIdx="Number(boardIdx)"
       :myMemberId="authStore.memberId"
     />
   </div>
@@ -19,28 +22,41 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import api from "@/libs/axios";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import api from "@/libs/axios";
+
 import BoardContent from "@/components/board/BoardContent.vue";
 import CommentSection from "@/components/board/CommentSection.vue";
 
-const route = useRoute();
+const props = defineProps({
+  boardType: {
+    type: String,
+    required: true,
+  },
+  id: {
+    type: [String, Number],
+    required: true,
+  },
+});
+
+const boardIdx = props.id;
 const authStore = useAuthStore();
-const communityIdx = route.params.id;
+const router = useRouter();
 
 const detail = ref({});
 const myReaction = ref(null);
 const reaction = ref({ like: 0, disLike: 0 });
 
 const fetchDetail = async () => {
-  const res = await api.get(`/community/${communityIdx}`);
+  const res = await api.get(`/${props.boardType}/${boardIdx}`);
   detail.value = res.data;
 };
 
 const fetchReactionCount = async () => {
+  if (props.boardType !== "community") return;
   try {
-    const res = await api.get(`/community/${communityIdx}/likeDisLike`);
+    const res = await api.get(`/community/${boardIdx}/likeDisLike`);
     reaction.value = res.data.totalLikeDisLike || { like: 0, disLike: 0 };
   } catch (err) {
     console.error("좋아요/싫어요 수치 가져오기 실패:", err);
@@ -48,8 +64,8 @@ const fetchReactionCount = async () => {
 };
 
 const fetchMyReaction = async () => {
-  if (!authStore.isLoggedIn) return;
-  const res = await api.get(`/community/member/likeDisLike/${communityIdx}`);
+  if (!authStore.isLoggedIn || props.boardType !== "community") return;
+  const res = await api.get(`/community/member/likeDisLike/${boardIdx}`);
   myReaction.value =
     res.data === "" || res.data === undefined ? null : res.data;
 };
@@ -63,13 +79,13 @@ const handleReaction = async (flag) => {
 
   try {
     if (myReaction.value === flag) {
-      await api.delete(`/community/member/likeDisLike/${communityIdx}`);
+      await api.delete(`/community/member/likeDisLike/${boardIdx}`);
       myReaction.value = null;
     } else {
       if (myReaction.value !== null) {
-        await api.delete(`/community/member/likeDisLike/${communityIdx}`);
+        await api.delete(`/community/member/likeDisLike/${boardIdx}`);
       }
-      await api.post(`/community/member/likeDisLike/${communityIdx}`, {
+      await api.post(`/community/member/likeDisLike/${boardIdx}`, {
         likeFlag: flag,
       });
       myReaction.value = flag;
@@ -85,8 +101,7 @@ onMounted(() => {
   fetchDetail();
   fetchReactionCount();
   if (authStore.isLoggedIn) {
-    console.log("fetchReaction!");
-    fetchMyReaction(); // 사용자 반응 정보 가져오기
+    fetchMyReaction();
   }
 });
 </script>
@@ -94,14 +109,14 @@ onMounted(() => {
 <style scoped lang="scss">
 @use "@/styles/theme" as *;
 
-.community-detail-container {
+.board-detail-container {
   display: flex;
-  flex-direction: column; // 세로 정렬
+  flex-direction: column;
   align-items: center;
   padding: 3rem 1rem;
   background-color: var(--color-background);
   min-width: 80%;
-  min-height: calc(100vh - 160px); // header + footer 고려
+  min-height: calc(100vh - 160px);
 }
 
 .section-box {
