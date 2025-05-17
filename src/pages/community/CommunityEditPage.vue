@@ -75,7 +75,7 @@ const submitEdit = async () => {
       content: content.value,
     });
     alert("게시물이 수정되었습니다.");
-    router.push(`/community/${communityIdx}`);
+    router.push(`/communities/${communityIdx}`);
   } catch (err) {
     console.error("게시물 수정 실패:", err);
     alert("수정 중 오류가 발생했습니다.");
