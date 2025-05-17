@@ -109,7 +109,7 @@ const goToCreatePage = () => {
     alert("로그인이 필요합니다.");
     router.push("/login");
   } else {
-    router.push(`/${boardTypeUrl}/create`);
+    router.push(`/${boardTypeUrl.value}/create`);
   }
 };
 

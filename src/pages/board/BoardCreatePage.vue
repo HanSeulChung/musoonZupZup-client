@@ -41,8 +41,9 @@ onMounted(() => {
 
   // 자유 게시판은 일반 사용자만, 공지사항은 관리자만 가능
   if (
-    (boardType === "notice" && !(role === "ADMIN" || role === "MASTER")) ||
-    (boardType === "community" && role !== "USER")
+    (boardType === "notice" &&
+      !(role.value === "ADMIN" || role.value === "MASTER")) ||
+    (boardType === "community" && role.value !== "USER")
   ) {
     alert("작성 권한이 없습니다.");
     router.push("/");
