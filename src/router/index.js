@@ -6,10 +6,10 @@ import MyPage from '@/pages/mypage/MyPage.vue'
 import UserListPage from '@/pages/user-list/UserListPage.vue' 
 import ApplyHomePage from '@/pages/apply-home/ApplyHomePage.vue' 
 import ApplyHomeDetail from '@/pages/apply-home//ApplyHomeDetailPage.vue' 
-import CommunityList from '@/pages/community/CommunityListPage.vue' 
-import CommunityDetail from '@/pages/community/CommunityDetailPage.vue'
-import CommunityCreate from '@/pages/community/CommunityCreatePage.vue'
-import CommunityEdit from '@/pages/community/CommunityEditPage.vue'
+import BoardList from '@/pages/board/BoardListPage.vue' 
+import BoardDetail from '@/pages/board/BoardDetailPage.vue'
+import BoardCreate from '@/pages/board/BoardCreatePage.vue'
+import BoardEdit from '@/pages/board/BoardEditPage.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -52,25 +52,33 @@ const routes = [
     name: 'ApplyHomeDetail',
     component: ApplyHomeDetail,
   },
-  { 
-    path: '/communities', 
+  {
+    path: '/communities',
     name: 'CommunityList',
-    component: CommunityList,
+    component: BoardList,
+    props: { boardType: 'community' }
   },
+  {
+    path: '/notices',
+    name: 'NoticeList',
+    component: BoardList,
+    props: { boardType: 'notice' }
+  },
+
   { 
     path: '/communities/:id', 
     name: 'CommunityDetail',
-    component: CommunityDetail,
+    component: BoardDetail,
   },
   { 
     path: '/communities/create', 
     name: 'CommunityCreate',
-    component: CommunityCreate,
+    component: BoardCreate,
   },
   {
     path: '/communities/edit/:id',
     name: 'CommunityEdit',
-    component: CommunityEdit,
+    component: BoardEdit,
   }
   // 추가 페이지도 여기에 등록 가능
   
