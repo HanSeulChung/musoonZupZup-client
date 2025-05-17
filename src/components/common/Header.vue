@@ -11,9 +11,9 @@
       <RouterLink to="/notices">공지사항</RouterLink>
       <RouterLink to="/communities">자유게시판</RouterLink>
       <RouterLink to="/apply-homes">청약 공고</RouterLink>
-      <RouterLink to="/likes">찜한 공고</RouterLink>
 
       <template v-if="isLoggedIn">
+        <RouterLink to="/likes">찜한 공고</RouterLink>
         <RouterLink to="/mypage">마이페이지</RouterLink>
         <button @click="logout">로그아웃</button>
       </template>
