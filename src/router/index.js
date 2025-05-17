@@ -3,6 +3,7 @@ import HomePage from '@/pages/HomePage.vue'
 import RegisterPage from '@/pages/regist/RegisterPage.vue' 
 import LoginPage from '@/pages/login/LoginPage.vue' 
 import MyPage from '@/pages/mypage/MyPage.vue'
+import MyPosts from '@/pages/mypage/MyPostsPage.vue'
 import UserListPage from '@/pages/user-list/UserListPage.vue' 
 import ApplyHomePage from '@/pages/apply-home/ApplyHomePage.vue' 
 import ApplyHomeDetail from '@/pages/apply-home//ApplyHomeDetailPage.vue' 
@@ -100,6 +101,11 @@ const routes = [
     name: 'NoticeEdit',
     component: BoardEdit,
     props: route => ({ boardType: 'notice', id: Number(route.params.id) })
+  },
+  {
+    path: '/myposts',
+    name: 'MyPosts',
+    component: MyPosts,
   },
   // 추가 페이지도 여기에 등록 가능
   
