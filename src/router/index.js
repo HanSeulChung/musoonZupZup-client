@@ -9,6 +9,7 @@ import ApplyHomeDetail from '@/pages/apply-home//ApplyHomeDetailPage.vue'
 import CommunityList from '@/pages/community/CommunityListPage.vue' 
 import CommunityDetail from '@/pages/community/CommunityDetailPage.vue'
 import CommunityCreate from '@/pages/community/CommunityCreatePage.vue'
+import CommunityEdit from '@/pages/community/CommunityEditPage.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -66,6 +67,11 @@ const routes = [
     name: 'CommunityCreate',
     component: CommunityCreate,
   },
+  {
+    path: '/community/edit/:id',
+    name: 'CommunityEdit',
+    component: CommunityEdit,
+  }
   // 추가 페이지도 여기에 등록 가능
   
 ]
