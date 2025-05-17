@@ -58,23 +58,23 @@ const router = useRouter();
 
 const allActions = {
   USER: [
-    { label: "내 장소 등록하기", path: "/mypage/places" },
+    { label: "내 장소 확인하기", path: "/mypage/places" },
     { label: "찜한 공고 보러가기", path: "/favorites" },
     { label: "내가 쓴 글 보러가기", path: "/myposts" },
   ],
   MEMBERSHIP: [
-    { label: "내 장소 등록하기", path: "/mypage/places" },
+    { label: "내 장소 확인하기", path: "/mypage/places" },
     { label: "gpt 내역 확인하기", path: "/mypage/gpt" },
     { label: "찜한 공고 보러가기", path: "/favorites" },
     { label: "내가 쓴 글 보러가기", path: "/myposts" },
   ],
   ADMIN: [
     { label: "사용자 전체 보기", path: "/admin/members" },
-    { label: "공지사항 쓰러가기", path: "/admin/announcement" },
+    { label: "공지사항 쓰러가기", path: "/notices/create" },
   ],
   MASTER: [
     { label: "사용자 전체 보기", path: "/admin/members" },
-    { label: "공지사항 쓰러가기", path: "/admin/announcement" },
+    { label: "공지사항 쓰러가기", path: "/notices/create" },
   ],
 };
 
