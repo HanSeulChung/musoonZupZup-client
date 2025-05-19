@@ -26,6 +26,8 @@
         :myMemberId="myMemberId"
         :editingCommentId="editingCommentId"
         :editingCommentText="editingCommentText"
+        :myRole="authStore.role"
+        @toggle-blind="handleToggleBlind"
         @edit="editComment"
         @cancel="cancelEdit"
         @save="saveEditedComment"
@@ -123,6 +125,17 @@ const deleteComment = async (commentIdx) => {
     await fetchComments();
   } catch (err) {
     console.error("댓글 삭제 실패:", err);
+  }
+};
+
+const handleToggleBlind = async (commentIdx, currentBlind) => {
+  const targetBlind = currentBlind === 1 ? false : true;
+  try {
+    await api.put(`/community/admin/comment/blind/${commentIdx}`, targetBlind);
+    alert(targetBlind === true ? "댓글이 숨김 처리되었습니다." : "숨김이 해제되었습니다.");
+    await fetchComments(); // 갱신
+  } catch (err) {
+    alert("댓글 숨김 처리 실패");
   }
 };
 
