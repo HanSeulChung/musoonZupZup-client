@@ -20,7 +20,8 @@
                 required
             />
             </div>
-
+            <p class="find-password" @click="showFindPwModal = true">비밀번호 찾기</p>
+            <FindPasswordModal v-if="showFindPwModal" @close="showFindPwModal = false" />
             <button type="submit" class="submit-button">로그인</button>
         </form>
         </div>
@@ -32,7 +33,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/libs/axios'
 import { useAuthStore } from '@/stores/auth'
+import FindPasswordModal from '@/components/auth/FindPasswordModal.vue' // 경로는 실제 파일 위치에 맞게
 
+const showFindPwModal = ref(false)
 const authStore = useAuthStore()
 const id = ref('')
 const password = ref('')
@@ -119,4 +122,17 @@ h2 {
         background-color: var(--color-primary-container);
     }
 }
+
+.find-password {
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    cursor: pointer;
+    margin-bottom: 1rem;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
 </style>
