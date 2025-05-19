@@ -6,6 +6,7 @@ import MyPage from '@/pages/mypage/MyPage.vue'
 import MyPlaces from '@/pages/mypage/MyPlacesPage.vue'
 import AddPlace from '@/pages/mypage/AddPlacePage.vue'
 import LikeHome from '@/pages/mypage/LikesPage.vue'
+import MyPosts from '@/pages/mypage/MyPostsPage.vue'
 import UserListPage from '@/pages/user-list/UserListPage.vue' 
 import ApplyHomePage from '@/pages/apply-home/ApplyHomePage.vue' 
 import ApplyHomeDetail from '@/pages/apply-home//ApplyHomeDetailPage.vue' 
@@ -118,6 +119,11 @@ const routes = [
     path: '/likes',
     name: 'LikeHome',
     component: LikeHome,
+  },
+  {
+    path: '/myposts',
+    name: 'MyPosts',
+    component: MyPosts,
   },
   // 추가 페이지도 여기에 등록 가능
 ]
