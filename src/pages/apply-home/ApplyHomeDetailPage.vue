@@ -6,7 +6,7 @@
             <div class="summary-card">
                 <span>{{ detail?.houseAddress }}</span>
                 <button
-                    v-if="authStore.isLoggedIn"
+                    v-if="authStore.isLoggedIn  && ['USER', 'MEMBERSHIP'].includes(authStore.role)"
                     @click="toggleLike"
                     :class="['like-btn', { liked: liked.value }]"
                 >
