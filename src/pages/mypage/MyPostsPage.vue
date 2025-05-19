@@ -1,7 +1,7 @@
 <template>
   <section class="my-posts-page">
     <h2 class="title">내가 작성한 게시글</h2>
-
+    <p class="post-count">총 {{ posts.totalElements }}개</p>
     <div v-if="posts.content.length > 0" class="post-list">
       <div class="post-card" v-for="post in posts.content" :key="post.idx">
         <router-link :to="`/communities/${post.idx}`" class="post-title">
@@ -31,6 +31,7 @@ import { useRouter } from 'vue-router'
 const posts = ref({
   content: [],
   totalPages: 0,
+  totalElements: 0,
   first: true,
   last: false
 })
@@ -44,7 +45,7 @@ const fetchPosts = async () => {
       params: { page: currentPage.value, size: pageSize }
     })
     posts.value = res.data
-    console.log(posts.value)
+    // console.log(posts.value)
   } catch (err) {
     console.error('내 게시글 조회 실패:', err)
     alert('게시글 정보를 가져오는 데 실패했습니다.')
@@ -66,7 +67,7 @@ onMounted(fetchPosts)
 @use '@/styles/theme' as *;
 
 .my-posts-page {
-  min-width: 70%;
+  min-width: 60%;
   margin: 2rem auto;
   padding: 2rem;
   background-color: var(--color-surface);
@@ -74,10 +75,16 @@ onMounted(fetchPosts)
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     min-height: calc(100vh - 160px);
   .title {
-    font-size: 1.75rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-  }
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.post-count {
+  font-size: 0.95rem;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 1.5rem;
+}
 
   .post-list {
     display: flex;
