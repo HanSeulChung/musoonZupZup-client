@@ -97,33 +97,39 @@ const routes = [
     path: '/notices/create',
     name: 'NoticeCreate',
     component: BoardCreate,
-    props: { boardType: 'notice' }
+    props: { boardType: 'notice' },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] }
   },
   {
     path: '/notices/edit/:id',
     name: 'NoticeEdit',
     component: BoardEdit,
-    props: route => ({ boardType: 'notice', id: Number(route.params.id) })
+    props: route => ({ boardType: 'notice', id: Number(route.params.id) }),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] }
   },
   {
     path: '/mypage/places',
     name: 'MyPlaces',
     component: MyPlaces,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
   },
   {
     path: '/places/add',
     name: 'AddPlace',
     component: AddPlace,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
   },
   {
     path: '/likes',
     name: 'LikeHome',
     component: LikeHome,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
   },
   {
     path: '/myposts',
     name: 'MyPosts',
     component: MyPosts,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
   },
   // 추가 페이지도 여기에 등록 가능
 ]
