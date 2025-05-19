@@ -53,8 +53,6 @@ const openAddressSearch = () => {
 }
 
 const registerPlace = async () => {
-  const fullAddress = `${baseAddress.value} ${detailAddress.value}`.trim()
-
   if (!alias.value.trim() || !baseAddress.value.trim()) {
     alert('장소 이름과 주소를 모두 입력해주세요.')
     return
@@ -64,7 +62,7 @@ const registerPlace = async () => {
     await api.post('/members/registPlace/regist', {
         alias: alias.value,
         address: baseAddress.value,
-        detailAddress: detailAddress.value
+        detail: detailAddress.value
     });
     alert('장소가 등록되었습니다.')
     router.push('/mypage/places')
