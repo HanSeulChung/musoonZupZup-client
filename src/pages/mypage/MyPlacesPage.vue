@@ -46,7 +46,7 @@ const fetchPlacesCount = async () => {
 
 const fetchPlaces = async () => {
     try {
-        const res = await api.get('/members/registPlace/list')
+        const res = await api.get('/members/registPlace')
         places.value = res.data || []
     } catch (err) {
         console.error('장소 불러오기 실패:', err)
