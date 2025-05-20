@@ -27,6 +27,15 @@
         <button @click="$emit('edit', comment.idx)">수정</button>
         <button @click="$emit('delete', comment.idx)">삭제</button>
         </div>
+        <!-- 숨김 처리/해제 버튼 (관리자만) -->
+        <div
+        class="comment-actions"
+        v-if="(myRole === 'ADMIN' || myRole === 'MASTER') && !editing"
+        >
+        <button @click="$emit('toggle-blind', comment.idx, comment.blind)">
+            {{ comment.blind === 1 ? "숨김 해제" : "숨김 처리" }}
+        </button>
+        </div>
     </li>
 </template>
 
@@ -36,11 +45,12 @@ import { ref, watch, computed } from 'vue'
 const props = defineProps({
     comment: Object,
     myMemberId: String,
+    myRole: String, // 추가: 현재 로그인한 유저의 권한
     editingCommentId: [Number, null],
     editingCommentText: String
 })
 
-const emit = defineEmits(['edit', 'delete', 'save', 'cancel'])
+const emit = defineEmits(['edit', 'delete', 'save', 'cancel', 'toggle-blind'])
 
 // 현재 댓글이 수정 중인지 판단
 const editing = computed(() => props.editingCommentId === props.comment.idx)
@@ -160,5 +170,11 @@ const formatDateTime = (dateStr) => {
         }
         }
     }
+}
+
+.blind-label {
+    font-size: 0.75rem;
+    color: var(--color-on-surface-variant);
+    margin-left: 0.5rem;
 }
 </style>

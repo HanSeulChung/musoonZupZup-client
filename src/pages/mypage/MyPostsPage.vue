@@ -1,29 +1,21 @@
 <template>
-  <section class="community-page">
-    <h2 class="page-title">내가 작성한 게시물</h2>
-
-    <div class="post-list">
+  <section class="my-posts-page">
+    <h2 class="title">내가 작성한 게시글</h2>
+    <p class="post-count">총 {{ posts.totalElements }}개</p>
+    <div v-if="posts.content.length > 0" class="post-list">
       <div class="post-card" v-for="post in posts.content" :key="post.idx">
-        <div class="card-left">
-          <h3 class="title">
-            <router-link :to="`/communities/${post.idx}`">{{
-              post.title
-            }}</router-link>
-          </h3>
-          <div class="stats">
-            <span>조회수 {{ post.views }}</span>
-            <span>댓글수 {{ post.commentCnt }}</span>
-            <span>좋아요 {{ post.like }}</span>
-            <span>싫어요 {{ post.disLike }}</span>
-          </div>
-        </div>
-        <div class="card-right">
-          <span class="date">{{ formatDate(post.createdAt) }}</span>
-        </div>
+        <router-link :to="`/communities/${post.idx}`" class="post-title">
+          {{ post.title }}
+        </router-link>
+        <p class="meta">
+          {{ formatDate(post.createdAt) }} · 조회수 {{ post.views }}
+        </p>
       </div>
     </div>
 
-    <div class="pagination">
+    <div v-else class="empty-message">작성한 게시글이 없습니다.</div>
+
+    <div class="pagination" v-if="posts.totalPages > 1">
       <button :disabled="posts.first" @click="changePage(currentPage - 1)">
         이전
       </button>
@@ -37,143 +29,110 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "@/stores/auth";
 import api from "@/libs/axios";
-
-const router = useRouter();
-const authStore = useAuthStore();
+import { useRouter } from "vue-router";
 
 const posts = ref({
   content: [],
   totalPages: 0,
+  totalElements: 0,
   first: true,
   last: false,
 });
 const currentPage = ref(0);
 const pageSize = 10;
+const router = useRouter();
 
-const fetchMyPosts = async () => {
+const fetchPosts = async () => {
   try {
-    const res = await api.get("/community/member/myposts", {
-      params: {
-        page: currentPage.value,
-        size: pageSize,
-      },
+    const res = await api.get("/community/member/list", {
+      params: { page: currentPage.value, size: pageSize },
     });
     posts.value = res.data;
+    // console.log(posts.value)
   } catch (err) {
-    console.error("내 게시물 목록 불러오기 실패:", err);
-    alert("내 게시물을 불러오는 중 오류가 발생했습니다.");
+    console.error("내 게시글 조회 실패:", err);
+    alert("게시글 정보를 가져오는 데 실패했습니다.");
   }
 };
 
 const changePage = (page) => {
   if (page < 0 || page >= posts.value.totalPages) return;
   currentPage.value = page;
-  fetchMyPosts();
+  fetchPosts();
 };
 
 const formatDate = (str) => new Date(str).toLocaleDateString();
 
-onMounted(() => {
-  if (!authStore.isLoggedIn) {
-    alert("로그인이 필요합니다.");
-    router.push("/login");
-    return;
-  }
-  fetchMyPosts();
-});
+onMounted(fetchPosts);
 </script>
 
 <style scoped lang="scss">
 @use "@/styles/theme" as *;
 
-.community-page {
-  margin: 0;
-  padding: 2rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+.my-posts-page {
   min-width: 60%;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: var(--color-surface);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   min-height: calc(100vh - 160px);
-
-  .page-title {
+  .title {
     font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--color-on-surface);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
   }
 
-  .post-list {
+  .post-count {
+    font-size: 0.95rem;
+    color: var(--color-on-surface-variant);
+    margin-bottom: 1.5rem;
+  }
+  >>>>>>>0370fbdabe356e5de05f577b3a7ca6772f96bba1 .post-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-  }
 
-  .post-card {
-    display: flex;
-    justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    border: 1px solid var(--color-outline);
-    background-color: var(--color-surface);
-    border-radius: 12px;
-    transition: box-shadow 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    .post-card {
+      padding: 1rem;
+      border: 1px solid var(--color-outline);
+      border-radius: 8px;
+      background-color: var(--color-background);
 
-    &:hover {
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    }
-
-    .card-left {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-
-      .title {
+      .post-title {
         font-size: 1.1rem;
         font-weight: 600;
+        color: var(--color-primary);
+        text-decoration: none;
 
-        a {
-          color: var(--color-on-surface);
-          text-decoration: none;
-
-          &:hover {
-            color: var(--color-primary);
-            text-decoration: underline;
-          }
+        &:hover {
+          text-decoration: underline;
         }
       }
 
-      .stats {
-        font-size: 0.85rem;
+      .meta {
+        font-size: 0.9rem;
         color: var(--color-on-surface-variant);
-        display: flex;
-        gap: 1rem;
+        margin-top: 0.4rem;
       }
     }
+  }
 
-    .card-right {
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-end;
-      height: 100%;
-
-      .date {
-        font-size: 1rem;
-        color: var(--color-on-surface-variant);
-      }
-    }
+  .empty-message {
+    text-align: center;
+    color: var(--color-on-surface-variant);
+    margin-top: 2rem;
   }
 
   .pagination {
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 1.5rem;
+    margin-top: 2rem;
 
     button {
       padding: 0.5rem 1rem;
-      font-size: 0.9rem;
       background-color: var(--color-primary-container);
       color: var(--color-on-primary-container);
       border: none;

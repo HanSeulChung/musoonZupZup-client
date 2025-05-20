@@ -28,7 +28,6 @@
 
       <p class="summary">총 사용자 {{ totalUsers }}명</p>
 
-      <!-- 사용자 목록 테이블 -->
       <table>
         <thead>
           <tr>
@@ -39,11 +38,12 @@
             <th>가입일</th>
             <th>Role</th>
             <th>상태</th>
+            <th v-if="auth.role === 'MASTER'">권한 관리</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="users.length === 0">
-            <td colspan="7">표시할 사용자가 없습니다.</td>
+            <td :colspan="auth.role === 'MASTER' ? 8 : 7">표시할 사용자가 없습니다.</td>
           </tr>
           <tr v-for="user in users" :key="user.memberIdx">
             <td>{{ user.id }}</td>
@@ -52,18 +52,41 @@
             <td>{{ user.gender || "..." }}</td>
             <td>{{ formatDate(user.createdAt) }}</td>
             <td>{{ user.role }}</td>
+
+            <!-- 상태(차단/복구) -->
             <td>
-              <button
-                :class="user.banned ? 'unban' : 'ban'"
-                @click="toggleBan(user)"
-              >
-                {{ user.banned ? "복구" : "차단" }}
-              </button>
+              <template v-if="user.id === auth.memberId || user.role === 'MASTER'">
+                <span class="self-label">-</span>
+              </template>
+              <template v-else>
+                <button
+                  :class="user.banned ? 'unban' : 'ban'"
+                  @click="toggleBan(user)"
+                >
+                  {{ user.banned ? "복구" : "차단" }}
+                </button>
+              </template>
+            </td>
+
+            <!-- 권한 관리: MASTER만 가능 -->
+            <td v-if="auth.role === 'MASTER'">
+              <template v-if="user.id === auth.memberId">
+                <span class="self-label">-</span>
+              </template>
+              <template v-else-if="user.role === 'USER'">
+                <button class="promote" @click="promoteToAdmin(user.memberIdx)">
+                  관리자로 등록
+                </button>
+              </template>
+              <template v-else-if="user.role === 'ADMIN'">
+                <button class="demote" @click="demoteToUser(user.memberIdx)">
+                  관리자 해제
+                </button>
+              </template>
             </td>
           </tr>
         </tbody>
       </table>
-
       <!-- 페이지네이션 -->
       <div class="pagination">
         <button @click="goToPage(page - 1)" :disabled="page === 1">《</button>
@@ -142,6 +165,41 @@ const fetchUsers = async () => {
     alert("사용자 목록 조회 실패");
   }
 };
+
+const promoteToAdmin = async (memberIdx) => {
+  try {
+    await api.patch(
+      '/master/role',
+      {
+        memberIdx,
+        toRole: 'ADMIN',
+      }
+    );
+    alert('권한이 ADMIN으로 변경되었습니다.');
+    fetchUsers(); // 변경 반영
+  } catch (err) {
+    console.error('권한 변경 실패:', err);
+    alert('권한 변경에 실패했습니다.');
+  }
+};
+
+const demoteToUser = async (memberIdx) => {
+  try {
+    await api.patch(
+      '/master/role',
+      {
+        memberIdx,
+        toRole: 'USER',
+      }
+    );
+    alert('권한이 USER로 변경되었습니다.');
+    fetchUsers(); // 변경 반영
+  } catch (err) {
+    console.error('권한 해제 실패:', err);
+    alert('권한 해제에 실패했습니다.');
+  }
+};
+
 
 const toggleBan = async (user) => {
   try {
@@ -316,5 +374,45 @@ onMounted(fetchUsers);
       }
     }
   }
+}
+
+.self-label {
+  font-weight: bold;
+  color: var(--color-on-surface-variant);
+}
+
+.promote {
+  background-color: #1976d2;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #1565c0;
+  }
+}
+
+.demote {
+  background-color: #1976d2;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #1565c0;
+  }
+}
+
+.empty-cell {
+  color: var(--color-on-surface-variant);
+  font-size: 0.95rem;
 }
 </style>

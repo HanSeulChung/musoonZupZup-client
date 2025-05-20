@@ -5,6 +5,13 @@
         <div class="map-section">
             <div class="summary-card">
                 <span>{{ detail?.houseAddress }}</span>
+                <button
+                    v-if="authStore.isLoggedIn  && ['USER', 'MEMBERSHIP'].includes(authStore.role)"
+                    @click="toggleLike"
+                    :class="['like-btn', { liked: liked.value }]"
+                >
+                    {{ liked.valueOf(true) ? '💔 찜 취소' : '❤️ 찜하기' }}
+                </button>
             </div>
             <div v-if="detail?.geo" class="map" ref="mapContainer"></div>
             <p v-else class="map-loading">위치 정보를 가져오는 중입니다...</p>
@@ -39,12 +46,14 @@ import { ref, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import api from '@/libs/axios';
 import { loadKakaoMap } from '@/libs/kakaoLoader';
+import { useAuthStore } from '@/stores/auth'
 
+const authStore = useAuthStore()
+const liked = ref(false) // 현재 찜 여부
 const route = useRoute();
 const detail = ref(null);
 const gptComment = ref(null);
 const mapContainer = ref(null);
-
 import { watch } from 'vue';
 
 watch(
@@ -56,7 +65,31 @@ watch(
         }
     }
 );
+const fetchLikeStatus = async () => {
+  if (!authStore.isLoggedIn) return
+  try {
+    const res = await api.get('/applylike/list')
+    const likedList = res.data.content || []
+    liked.value = likedList.some(item => item.applyIdx == route.params.id)
+} catch (err) {
+    console.error('찜 상태 불러오기 실패:', err)
+  }
+}
 
+const toggleLike = async () => {
+  const id = route.params.id
+  try {
+    if (liked.value) {
+      await api.delete(`/applylike/${id}`)
+      liked.value = false
+    } else {
+      await api.post(`/applylike/${id}`)
+      liked.value = true
+    }
+  } catch (err) {
+    console.error('찜 상태 변경 실패:', err)
+  }
+}
 
 const fetchDetailHome = async () => {
     const res = await api.get('/applyhome/detail/apply', {
@@ -101,8 +134,9 @@ const loadMap = async () => {
 };
 
 onMounted(async () => {
-    await Promise.all([fetchDetailHome(), fetchDetailGpt()]);
-});
+  await Promise.all([fetchDetailHome(), fetchDetailGpt()])
+  await fetchLikeStatus()
+})
 </script>
 
 <style scoped lang="scss">
@@ -135,6 +169,35 @@ onMounted(async () => {
                 font-size: 0.9rem;
                 font-weight: 500;
                 color: var(--color-on-surface);
+                justify-content: space-between;
+                padding: 1rem;
+
+                .like-btn {
+                    padding: 0.4rem 0.8rem;
+                    font-size: 0.9rem;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    background-color: var(--color-primary-container);
+                    color: var(--color-on-primary-container);
+                    transition: background-color 0.2s;
+
+                    &:hover {
+                    background-color: var(--color-primary);
+                    color: white;
+                    }
+
+                    &.liked {
+                    background-color: var(--color-secondary-container);
+                    color: var(--color-on-secondary-container);
+
+                    &:hover {
+                        background-color: var(--color-secondary);
+                        color: white;
+                    }
+                    }
+                }
             }
 
             .map {

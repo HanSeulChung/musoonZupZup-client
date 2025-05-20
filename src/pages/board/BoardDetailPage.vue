@@ -49,8 +49,26 @@ const myReaction = ref(null);
 const reaction = ref({ like: 0, disLike: 0 });
 
 const fetchDetail = async () => {
-  const res = await api.get(`/${props.boardType}/${boardIdx}`);
-  detail.value = res.data;
+   try {
+    const res = await api.get(`/${props.boardType}/${boardIdx}`);
+    const data = res.data;
+
+    // 일반 사용자이고 blind === 1이면 접근 차단
+    if (
+      (authStore.role === "USER" || authStore.role === "MEMBERSHIP") &&
+      data.blind === 1
+    ) {
+      alert("해당 게시물은 숨김 처리되었습니다.");
+      router.push(props.boardType === "notice" ? "/notices" : "/communities");
+      return;
+    }
+
+    detail.value = data;
+  } catch (err) {
+    console.error("게시글 상세 조회 실패:", err);
+    alert("게시글 정보를 불러오는 데 실패했습니다.");
+    router.push(props.boardType === "notice" ? "/notices" : "/communities");
+  }
 };
 
 const fetchReactionCount = async () => {

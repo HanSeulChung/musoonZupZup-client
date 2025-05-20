@@ -34,6 +34,11 @@
       <button @click="onEdit">수정</button>
       <button @click="onDelete">삭제</button>
     </div>
+    <div class="admin-actions" v-if="authStore.role === 'ADMIN' || authStore.role === 'MASTER'">
+      <button @click="toggleBlind">
+        {{ detail?.blind === 1 ? '숨김 해제' : '숨김 처리' }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -73,6 +78,18 @@ const formatDate = (dateStr) => {
 const formattedContent = computed(
   () => props.detail?.content?.replace(/\n/g, "<br />") || ""
 );
+
+const toggleBlind = async () => {
+  const targetBlind = props.detail.blind === 1 ? false : true;
+  try {
+    await api.put(`/${props.boardType}/admin/blind/${boardIdx}`, targetBlind);
+    alert(targetBlind === true ? "게시물이 숨김 처리되었습니다." : "숨김이 해제되었습니다.");
+    props.detail.blind = targetBlind; // 즉시 반영
+  } catch (err) {
+    alert("숨김 처리 중 오류가 발생했습니다.");
+  }
+};
+
 
 const onEdit = () => {
   router.push(editPath.value);
@@ -167,5 +184,24 @@ const onDelete = async () => {
 }
 .post-actions button:hover {
   text-decoration: underline;
+}
+
+.admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+
+  button {
+    background-color: var(--color-outline);
+    border: none;
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--color-secondary-container);
+    }
+  }
 }
 </style>

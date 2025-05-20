@@ -3,6 +3,9 @@ import HomePage from '@/pages/HomePage.vue'
 import RegisterPage from '@/pages/regist/RegisterPage.vue' 
 import LoginPage from '@/pages/login/LoginPage.vue' 
 import MyPage from '@/pages/mypage/MyPage.vue'
+import MyPlaces from '@/pages/mypage/MyPlacesPage.vue'
+import AddPlace from '@/pages/mypage/AddPlacePage.vue'
+import LikeHome from '@/pages/mypage/LikesPage.vue'
 import MyPosts from '@/pages/mypage/MyPostsPage.vue'
 import UserListPage from '@/pages/user-list/UserListPage.vue' 
 import ApplyHomePage from '@/pages/apply-home/ApplyHomePage.vue' 
@@ -94,21 +97,41 @@ const routes = [
     path: '/notices/create',
     name: 'NoticeCreate',
     component: BoardCreate,
-    props: { boardType: 'notice' }
+    props: { boardType: 'notice' },
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] }
   },
   {
     path: '/notices/edit/:id',
     name: 'NoticeEdit',
     component: BoardEdit,
-    props: route => ({ boardType: 'notice', id: Number(route.params.id) })
+    props: route => ({ boardType: 'notice', id: Number(route.params.id) }),
+    meta: { requiresAuth: true, roles: ['ADMIN', 'MASTER'] }
+  },
+  {
+    path: '/mypage/places',
+    name: 'MyPlaces',
+    component: MyPlaces,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
+  },
+  {
+    path: '/places/add',
+    name: 'AddPlace',
+    component: AddPlace,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
+  },
+  {
+    path: '/likes',
+    name: 'LikeHome',
+    component: LikeHome,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
   },
   {
     path: '/myposts',
     name: 'MyPosts',
     component: MyPosts,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
   },
   // 추가 페이지도 여기에 등록 가능
-  
 ]
 
 const router = createRouter({

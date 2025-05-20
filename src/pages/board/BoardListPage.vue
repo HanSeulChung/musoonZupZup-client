@@ -4,6 +4,7 @@
       <h2 class="page-title">
         {{ boardType === "notice" ? "공지사항" : "커뮤니티 게시글" }}
       </h2>
+      <p class="post-count">총 {{ posts.totalElements }}개</p>
 
       <button v-if="canWrite" class="create-btn" @click="goToCreatePage">
         {{ boardType === "notice" ? "공지사항 작성하기" : "게시글 작성하기" }}
@@ -77,6 +78,7 @@ const canWrite = computed(() => {
 const posts = ref({
   content: [],
   totalPages: 0,
+  totalElements: 0,
   first: true,
   last: false,
 });
@@ -126,30 +128,37 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  min-width: 60%;
+  max-width: 1024px;
   min-height: calc(100vh - 160px);
 
   .header-with-button {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
 
     .page-title {
-      font-size: 1.75rem;
+      font-size: 1.8rem;
       font-weight: 700;
       color: var(--color-on-surface);
+    }
+
+    .post-count {
+      font-size: 0.95rem;
+      color: var(--color-on-surface-variant);
+      margin-top: 0.25rem;
     }
 
     .create-btn {
       background-color: var(--color-primary-container);
       color: var(--color-on-primary-container);
       padding: 0.5rem 1rem;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       border: none;
       border-radius: 6px;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s ease;
 
       &:hover {
         background-color: var(--color-primary);
@@ -161,21 +170,21 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
   .post-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.2rem;
   }
 
   .post-card {
     display: flex;
     justify-content: space-between;
-    padding: 1.25rem 1.5rem;
+    padding: 1.2rem 1.5rem;
     border: 1px solid var(--color-outline);
-    background-color: var(--color-surface);
     border-radius: 12px;
+    background-color: var(--color-surface);
     transition: box-shadow 0.2s;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 
     &:hover {
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .card-left {
@@ -202,7 +211,7 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
         font-size: 0.85rem;
         color: var(--color-on-surface-variant);
         display: flex;
-        gap: 1rem;
+        gap: 1.2rem;
       }
     }
 
@@ -210,10 +219,10 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
       display: flex;
       align-items: flex-start;
       justify-content: flex-end;
-      height: 100%;
+      min-width: 100px;
 
       .date {
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: var(--color-on-surface-variant);
       }
     }
@@ -224,6 +233,7 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
     justify-content: center;
     align-items: center;
     gap: 1.5rem;
+    margin-top: 2rem;
 
     button {
       padding: 0.5rem 1rem;
