@@ -46,6 +46,10 @@ import CommentItem from "@/components/board/CommentItem.vue";
 const props = defineProps({
   communityIdx: [Number, String], // ← 문자열 가능성도 고려
   myMemberId: String,
+  boardType: {
+    type: String,
+    default: "community", // 'notice' or 'community'
+  },
 });
 
 const authStore = useAuthStore();
@@ -57,8 +61,12 @@ const editingCommentText = ref("");
 
 // 댓글 목록 불러오기
 const fetchComments = async () => {
+  const endpoint =
+    boardType === "notice"
+      ? "/notice/comment/${props.communityIdx}"
+      : "/community/comment/${props.communityIdx}";
   try {
-    const res = await api.get(`/community/comment/${props.communityIdx}`);
+    const res = await api.get(endpoint);
     comments.value = res.data.commentList?.content || [];
     console.log("[댓글 목록]", comments.value);
   } catch (err) {
@@ -69,8 +77,13 @@ const fetchComments = async () => {
 // 댓글 등록
 const submitComment = async () => {
   if (!authStore.isLoggedIn || !newComment.value.trim()) return;
+  // TODO: 댓글 endpoint api 연결
+  const endpoint =
+    boardType === "notice"
+      ? "/notice/comment/${props.communityIdx}"
+      : "/community/member/comment/${props.communityIdx}";
   try {
-    await api.post(`/community/member/comment/${props.communityIdx}`, {
+    await api.post(endpoint, {
       comment: newComment.value,
       memberId: props.myMemberId,
     });
@@ -100,8 +113,12 @@ const cancelEdit = () => {
 const saveEditedComment = async (commentIdx, newText) => {
   if (!newText.trim()) return alert("댓글 내용을 입력해주세요.");
 
+  const endpoint =
+    boardType === "notice"
+      ? "/notice/comment/edit/${commentIdx}"
+      : "/community/member/comment/edit/${commentIdx}";
   try {
-    await api.put(`/community/member/comment/edit/${commentIdx}`, {
+    await api.put(endpoint, {
       idx: commentIdx,
       comment: newText,
       memberId: props.myMemberId,
@@ -118,8 +135,12 @@ const saveEditedComment = async (commentIdx, newText) => {
 // 댓글 삭제
 const deleteComment = async (commentIdx) => {
   if (!confirm("댓글을 삭제하시겠습니까?")) return;
+  const endpoint =
+    boardType === "notice"
+      ? "/notice/comment/delete/${commentIdx}"
+      : "/community/member/comment/delete/${commentIdx}";
   try {
-    await api.put(`/community/member/comment/delete/${commentIdx}`, {
+    await api.put(endpoint, {
       memberId: props.myMemberId,
     });
     await fetchComments();
@@ -130,9 +151,18 @@ const deleteComment = async (commentIdx) => {
 
 const handleToggleBlind = async (commentIdx, currentBlind) => {
   const targetBlind = currentBlind === 1 ? false : true;
+  // TODO: 공지사항 댓글도 blind할건지??
+  const endpoint =
+    boardType === "notice"
+      ? ""
+      : "/community/admin/comment/blind/${commentIdx}";
   try {
-    await api.put(`/community/admin/comment/blind/${commentIdx}`, targetBlind);
-    alert(targetBlind === true ? "댓글이 숨김 처리되었습니다." : "숨김이 해제되었습니다.");
+    await api.put(endpoint, targetBlind);
+    alert(
+      targetBlind === true
+        ? "댓글이 숨김 처리되었습니다."
+        : "숨김이 해제되었습니다."
+    );
     await fetchComments(); // 갱신
   } catch (err) {
     alert("댓글 숨김 처리 실패");

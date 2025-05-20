@@ -13,9 +13,9 @@
 
     <CommentSection
       class="section-box"
-      v-if="boardType === 'community'"
       :communityIdx="Number(boardIdx)"
       :myMemberId="authStore.memberId"
+      :boardType="boardType"
     />
   </div>
 </template>
@@ -49,7 +49,7 @@ const myReaction = ref(null);
 const reaction = ref({ like: 0, disLike: 0 });
 
 const fetchDetail = async () => {
-   try {
+  try {
     const res = await api.get(`/${props.boardType}/${boardIdx}`);
     const data = res.data;
 
