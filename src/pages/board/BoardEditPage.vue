@@ -68,8 +68,10 @@ const submitEdit = async () => {
     return;
   }
 
+  const endpoint =
+    boardType === "notice" ? "/notice/admin/edit" : "/community/member/edit";
   try {
-    await api.put(`/${boardType}/member/edit`, {
+    await api.put(endpoint, {
       idx: communityIdx,
       memberId: memberId.value,
       title: title.value,

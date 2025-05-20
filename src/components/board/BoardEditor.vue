@@ -39,11 +39,6 @@ onMounted(() => {
 const submitPost = async () => {
   content.value = quillInstance.root.innerHTML;
 
-  try {
-    await api.post("/community/create", {
-      title: title.value,
-      content: content.value,
-    });
     alert("게시물이 등록되었습니다.");
     // router.push('/communities')
   } catch (err) {

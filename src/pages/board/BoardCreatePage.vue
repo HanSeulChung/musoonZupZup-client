@@ -73,7 +73,7 @@ const submitPost = async () => {
   }
 
   const endpoint =
-    boardType === "notice" ? "/notice/member/post" : "/community/member/post";
+    boardType === "notice" ? "/notice/admin/post" : "/community/member/post";
   const redirectPath = boardType === "notice" ? "/notices" : "/communities";
 
   try {

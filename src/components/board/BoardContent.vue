@@ -34,9 +34,15 @@
       <button @click="onEdit">수정</button>
       <button @click="onDelete">삭제</button>
     </div>
-    <div class="admin-actions" v-if="authStore.role === 'ADMIN' || authStore.role === 'MASTER'">
+    <div
+      class="admin-actions"
+      v-if="
+        props.boardType === 'community' &&
+        (authStore.role === 'ADMIN' || authStore.role === 'MASTER')
+      "
+    >
       <button @click="toggleBlind">
-        {{ detail?.blind === 1 ? '숨김 해제' : '숨김 처리' }}
+        {{ detail?.blind === 1 ? "숨김 해제" : "숨김 처리" }}
       </button>
     </div>
   </div>
@@ -83,13 +89,16 @@ const toggleBlind = async () => {
   const targetBlind = props.detail.blind === 1 ? false : true;
   try {
     await api.put(`/${props.boardType}/admin/blind/${boardIdx}`, targetBlind);
-    alert(targetBlind === true ? "게시물이 숨김 처리되었습니다." : "숨김이 해제되었습니다.");
+    alert(
+      targetBlind === true
+        ? "게시물이 숨김 처리되었습니다."
+        : "숨김이 해제되었습니다."
+    );
     props.detail.blind = targetBlind; // 즉시 반영
   } catch (err) {
     alert("숨김 처리 중 오류가 발생했습니다.");
   }
 };
-
 
 const onEdit = () => {
   router.push(editPath.value);
@@ -97,9 +106,12 @@ const onEdit = () => {
 
 const onDelete = async () => {
   if (!confirm("정말 게시물을 삭제하시겠습니까?")) return;
-
+  const endpoint =
+    boardType === "notice"
+      ? "/notice/admin/delete/${boardIdx}"
+      : "/community/member/delete/${boardIdx}";
   try {
-    await api.put(`/${props.boardType}/member/delete/${boardIdx}`);
+    await api.put(endpoint);
     alert("게시물이 삭제되었습니다.");
     router.push(listPath.value);
   } catch (err) {
