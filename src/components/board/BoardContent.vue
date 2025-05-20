@@ -107,9 +107,9 @@ const onEdit = () => {
 const onDelete = async () => {
   if (!confirm("정말 게시물을 삭제하시겠습니까?")) return;
   const endpoint =
-    boardType === "notice"
-      ? "/notice/admin/delete/${boardIdx}"
-      : "/community/member/delete/${boardIdx}";
+    props.boardType === "notice"
+      ? `/notice/admin/delete/${boardIdx}`
+      : `/community/member/delete/${boardIdx}`;
   try {
     await api.put(endpoint);
     alert("게시물이 삭제되었습니다.");
