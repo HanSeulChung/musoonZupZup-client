@@ -89,7 +89,7 @@ onMounted(fetchPosts);
     color: var(--color-on-surface-variant);
     margin-bottom: 1.5rem;
   }
-  >>>>>>>0370fbdabe356e5de05f577b3a7ca6772f96bba1 .post-list {
+  .post-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
