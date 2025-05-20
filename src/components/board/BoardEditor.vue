@@ -35,17 +35,6 @@ onMounted(() => {
     },
   });
 });
-
-const submitPost = async () => {
-  content.value = quillInstance.root.innerHTML;
-
-    alert("게시물이 등록되었습니다.");
-    // router.push('/communities')
-  } catch (err) {
-    console.error("게시물 작성 실패:", err);
-    alert("등록 중 오류 발생");
-  }
-};
 </script>
 
 <style scoped>
