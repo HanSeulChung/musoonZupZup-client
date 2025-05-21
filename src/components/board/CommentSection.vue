@@ -63,7 +63,7 @@ const editingCommentText = ref("");
 const fetchComments = async () => {
   const endpoint =
     props.boardType === "notice"
-      ? `/notice/comment/${props.communityIdx}`
+      ? `/noticeComment/${props.communityIdx}`
       : `/community/comment/${props.communityIdx}`;
   try {
     const res = await api.get(endpoint);
@@ -80,7 +80,7 @@ const submitComment = async () => {
   // TODO: 댓글 endpoint api 연결
   const endpoint =
     props.boardType === "notice"
-      ? `/notice/comment/${props.communityIdx}`
+      ? `/noticeComment/member/post/${props.communityIdx}`
       : `/community/member/comment/${props.communityIdx}`;
   try {
     await api.post(endpoint, {
@@ -115,7 +115,7 @@ const saveEditedComment = async (commentIdx, newText) => {
 
   const endpoint =
     props.boardType === "notice"
-      ? `/notice/comment/edit/${commentIdx}`
+      ? `/noticeComment/member/edit/${commentIdx}`
       : `/community/member/comment/edit/${commentIdx}`;
   try {
     await api.put(endpoint, {
@@ -137,7 +137,7 @@ const deleteComment = async (commentIdx) => {
   if (!confirm("댓글을 삭제하시겠습니까?")) return;
   const endpoint =
     props.boardType === "notice"
-      ? `/notice/comment/delete/${commentIdx}`
+      ? `/noticeComment/member/delete/${commentIdx}`
       : `/community/member/comment/delete/${commentIdx}`;
   try {
     await api.put(endpoint, {
@@ -151,10 +151,9 @@ const deleteComment = async (commentIdx) => {
 
 const handleToggleBlind = async (commentIdx, currentBlind) => {
   const targetBlind = currentBlind === 1 ? false : true;
-  // TODO: 공지사항 댓글도 blind할건지??
   const endpoint =
     props.boardType === "notice"
-      ? ""
+      ? `/noticeComment/admin/blind/${commentIdx}`
       : `/community/admin/comment/blind/${commentIdx}`;
   try {
     await api.put(endpoint, targetBlind);
