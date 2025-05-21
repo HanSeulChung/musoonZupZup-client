@@ -12,8 +12,10 @@
       <RouterLink to="/communities">자유게시판</RouterLink>
       <RouterLink to="/apply-homes">청약 공고</RouterLink>
 
-      <template v-if="isLoggedIn">
+      <template v-if="isLoggedIn && (role==='USER' || role === 'MEMBERSHIP')">
         <RouterLink to="/likes">찜한 공고</RouterLink>
+      </template>
+      <template v-if="isLoggedIn">
         <RouterLink to="/mypage">마이페이지</RouterLink>
         <button @click="logout">로그아웃</button>
       </template>
@@ -33,7 +35,7 @@ import api from "@/libs/axios";
 
 const router = useRouter();
 const auth = useAuthStore();
-const { isLoggedIn } = storeToRefs(auth);
+const { role, isLoggedIn } = storeToRefs(auth);
 
 const logout = async () => {
   try {
