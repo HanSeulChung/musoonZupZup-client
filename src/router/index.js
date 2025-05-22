@@ -7,6 +7,7 @@ import MyPlaces from '@/pages/mypage/MyPlacesPage.vue'
 import AddPlace from '@/pages/mypage/AddPlacePage.vue'
 import LikeHome from '@/pages/mypage/LikesPage.vue'
 import MyPosts from '@/pages/mypage/MyPostsPage.vue'
+import MyGpt from '@/pages/mypage/MyGptPage.vue'
 import UserListPage from '@/pages/user-list/UserListPage.vue' 
 import ApplyHomePage from '@/pages/apply-home/ApplyHomePage.vue' 
 import ApplyHomeDetail from '@/pages/apply-home//ApplyHomeDetailPage.vue' 
@@ -131,7 +132,12 @@ const routes = [
     component: MyPosts,
     meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
   },
-  // 추가 페이지도 여기에 등록 가능
+  {
+    path: '/mypage/gpt',
+    name: 'MyGpt',
+    component: MyGpt,
+    meta: { requiresAuth: true, roles: ['USER', 'MEMBERSHIP'] }
+  },
 ]
 
 const router = createRouter({
