@@ -1,7 +1,7 @@
 <template>
   <div class="detail-card">
     <router-link :to="listPath" class="back-link"
-      >← 게시물 목록으로</router-link
+      >← 목록으로</router-link
     >
     <h2 class="title">{{ detail?.title || "제목 없음" }}
     <span v-if="authStore.role === 'ADMIN' || authStore.role === 'MASTER'">
