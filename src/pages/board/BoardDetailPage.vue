@@ -9,6 +9,7 @@
       :reaction="reaction"
       :boardType="boardType"
       @updateReaction="handleReaction"
+      @update-blind="(val) => detail.blind = val"
     />
 
     <CommentSection

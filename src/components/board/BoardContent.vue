@@ -3,8 +3,11 @@
     <router-link :to="listPath" class="back-link"
       >← 게시물 목록으로</router-link
     >
-    <h2 class="title">{{ detail?.title || "제목 없음" }}</h2>
-
+    <h2 class="title">{{ detail?.title || "제목 없음" }}
+    <span v-if="authStore.role === 'ADMIN' || authStore.role === 'MASTER'">
+      <span v-if="detail?.blind === 1" class="blind-tag">[숨김됨]</span>
+    </span>
+    </h2>
     <div class="meta-info">
       <span>작성자: {{ detail?.memberId || "작성자 없음" }}</span>
       <span>작성일: {{ formatDate(detail?.createdAt) }}</span>
@@ -64,7 +67,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update-reaction"]);
+const emit = defineEmits(["update-reaction", "update-blind"]);
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -86,16 +89,17 @@ const formattedContent = computed(
 );
 
 const toggleBlind = async () => {
-  const targetBlind = props.detail.blind === 1 ? false : true;
+  const targetBlind = props.detail.blind === 1 ? 0 : 1; // 숫자 0 또는 1로 보냄
   try {
     await api.put(`/${props.boardType}/admin/blind/${boardIdx}`, targetBlind);
     alert(
-      targetBlind === true
+      targetBlind === 1
         ? "게시물이 숨김 처리되었습니다."
         : "숨김이 해제되었습니다."
     );
-    props.detail.blind = targetBlind; // 즉시 반영
+    emit("update-blind", targetBlind); // 부모에게도 숫자로 전달
   } catch (err) {
+    console.error("숨김 처리 에러:", err);
     alert("숨김 처리 중 오류가 발생했습니다.");
   }
 };
@@ -123,7 +127,6 @@ const onDelete = async () => {
 
 <style lang="scss" scoped>
 @use "@/styles/theme" as *;
-
 .detail-card {
   width: 100%;
   max-width: 800px;
@@ -214,6 +217,15 @@ const onDelete = async () => {
     &:hover {
       background-color: var(--color-secondary-container);
     }
+  }
+}
+
+.title {
+  .blind-tag {
+    margin-left: 0.5rem;
+    font-size: 0.9rem;
+    color: red;
+    font-weight: bold;
   }
 }
 </style>
