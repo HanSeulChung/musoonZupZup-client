@@ -112,6 +112,17 @@
             <p v-if="isAsking" class="loading-animation">GPT가 답변을 작성 중입니다...</p>
             <p v-else>{{ gptAnswer }}</p>
             </div>
+            
+            <div v-if="gptHistory.length > 0" class="gpt-history">
+            <h4>이전 질문 내역</h4>
+            <ul>
+                <li v-for="(item, index) in gptHistory" :key="index">
+                <strong>Q.</strong> {{ item.request }}  
+                <br />
+                <strong>A.</strong> {{ item.comment }}
+                </li>
+            </ul>
+            </div>
         </div>
     </div>
   </Teleport>
@@ -149,6 +160,22 @@ let isDragging = false;
 let offsetX = 0;
 let offsetY = 0;
 
+
+const gptHistory = ref([]);
+const fetchGptHistory = async () => {
+  try {
+    const res = await api.get('/applyhome/ms/allComments', {
+      params: { idx: route.params.id }
+    });
+
+    console.log(res.data)
+    gptHistory.value = res.data;
+  } catch (err) {
+    console.error('이전 GPT 질문 내역 불러오기 실패:', err);
+  }
+};
+
+
 const startDragging = (e) => {
   isDragging = true;
   offsetX = e.clientX - gptModalLeft.value;
@@ -169,10 +196,11 @@ const stopDragging = () => {
   document.removeEventListener('mouseup', stopDragging);
 };
 
-const openGptQueryModal = () => {
+const openGptQueryModal =  async () => {
   showGptQueryModal.value = true;
   gptQueryText.value = '';
   gptAnswer.value = '';
+  await fetchGptHistory(); // 이전 질문 내역 불러오기
 };
 
 const closeGptQueryModal = () => {
@@ -594,5 +622,32 @@ onMounted(async () => {
     white-space: pre-line;
   }
 }
+
+.gpt-history {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f6f6f6;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+
+  ul {
+    list-style: none;
+    padding: 0;
+
+    li {
+      margin-bottom: 1rem;
+      line-height: 1.4;
+
+      strong {
+        display: inline-block;
+        color: var(--color-primary);
+        width: 1.5rem;
+      }
+    }
+  }
+}
+
 
 </style>
