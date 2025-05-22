@@ -1,5 +1,8 @@
 <template>
   <section class="apply-home-detail">
+    <div class="go-to-list">
+        <router-link to="/apply-homes" class="list-link">← 목록으로 돌아가기</router-link>
+    </div>
     <div class="detail-content">
       <!-- 지도 영역 -->
       <div class="map-section">
@@ -349,7 +352,7 @@ onMounted(async () => {
     display: flex;
     gap: 2rem;
     flex-wrap: wrap;
-    margin-top: 2rem;
+    margin-top: 0.8rem;
 
     .map-section {
       flex: 1;
@@ -664,6 +667,17 @@ onMounted(async () => {
     }
   }
 }
+.go-to-list {
 
+  .list-link {
+    font-size: 0.95rem;
+    color: var(--color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
 
 </style>
