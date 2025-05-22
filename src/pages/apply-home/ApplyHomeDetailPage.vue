@@ -102,10 +102,9 @@
 
             <form @submit.prevent="submitGptQuery">
             <textarea v-model="gptQueryText" placeholder="예: 주변 교통은 어떤가요?" required />
-            <button type="submit" :disabled="isAsking">
+            <button type="submit" class="submit-btn" :disabled="isAsking">
                 {{ isAsking ? '질문 중...' : '질문하기' }}
             </button>
-            <button type="button" @click="closeGptQueryModal">닫기</button>
             </form>
 
             <div class="gpt-answer" v-if="isAsking || gptAnswer">
@@ -570,27 +569,19 @@ onMounted(async () => {
       border: 1px solid #ccc;
     }
 
-    button {
-      padding: 0.6rem;
-      font-weight: bold;
-      border-radius: 5px;
-      cursor: pointer;
-      border: none;
-
-      &:first-of-type {
+   .submit-btn {
         background-color: var(--color-primary);
         color: white;
+        font-weight: bold;
+        border: none;
+        padding: 0.6rem;
+        border-radius: 5px;
+        cursor: pointer;
 
         &:disabled {
-          background-color: gray;
-          cursor: not-allowed;
+            background-color: gray;
+            cursor: not-allowed;
         }
-      }
-
-      &:last-of-type {
-        background-color: #ddd;
-        color: black;
-      }
     }
   }
 
