@@ -33,7 +33,8 @@
         <p>공고 번호: {{ detail?.pblancNo }}</p>
         <p>당첨 발표일: {{ formatDate(detail?.applyAnnounceDate) }}</p>
         <p>청약기간: {{ formatDate(detail?.applyStartDate) }} ~ {{ formatDate(detail?.applyEndDate) }}</p>
-    </div>
+        <p>분양 사무실 번호: {{ detail?.businessTel }}</p>
+      </div>
 
       <div class="gpt-comment">
         <div class="gpt-comment-header">
