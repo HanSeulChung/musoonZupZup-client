@@ -38,7 +38,6 @@
           </div>
           <div class="stats" v-if="boardType === 'notice'">
             <span>조회수 {{ post.views }}</span>
-            <span>댓글수 {{ post.commentCnt }}</span>
           </div>
         </div>
         <div class="card-right">
