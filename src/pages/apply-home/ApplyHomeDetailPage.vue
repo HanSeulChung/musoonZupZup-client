@@ -80,6 +80,41 @@
         </form>
       </div>
     </div>
+
+    <!-- GPT 질문 모달 -->
+    <div
+    v-if="showGptQueryModal"
+    class="modal-backdrop"
+    @mousedown.self="closeGptQueryModal"
+    >
+        <div
+            class="modal-content gpt-modal"
+            ref="gptModal"
+            :style="{ top: gptModalTop + 'px', left: gptModalLeft + 'px' }"
+        >
+            <!-- 드래그 영역 -->
+            <div class="modal-header" @mousedown="startDragging">
+            <h3>GPT에게 물어보기</h3>
+            <button class="close-btn" @click="closeGptQueryModal">×</button>
+            </div>
+
+            <p>궁금한 내용을 입력하세요:</p>
+
+            <form @submit.prevent="submitGptQuery">
+            <textarea v-model="gptQueryText" placeholder="예: 주변 교통은 어떤가요?" required />
+            <button type="submit" :disabled="isAsking">
+                {{ isAsking ? '질문 중...' : '질문하기' }}
+            </button>
+            <button type="button" @click="closeGptQueryModal">닫기</button>
+            </form>
+
+            <div class="gpt-answer" v-if="isAsking || gptAnswer">
+            <h4>답변 결과</h4>
+            <p v-if="isAsking" class="loading-animation">GPT가 답변을 작성 중입니다...</p>
+            <p v-else>{{ gptAnswer }}</p>
+            </div>
+        </div>
+    </div>
   </Teleport>
 </template>
 
@@ -102,6 +137,66 @@ const showModal = ref(false);
 const showPaymentModal = ref(false);
 const cardNumber = ref('');
 const name = ref('');
+const showGptQueryModal = ref(false);
+const gptQueryText = ref('');
+const gptAnswer = ref('');
+const isAsking = ref(false);
+
+const gptModal = ref(null);
+const gptModalTop = ref(100);
+const gptModalLeft = ref(window.innerWidth / 2 - 300);
+
+let isDragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+const startDragging = (e) => {
+  isDragging = true;
+  offsetX = e.clientX - gptModalLeft.value;
+  offsetY = e.clientY - gptModalTop.value;
+  document.addEventListener('mousemove', dragModal);
+  document.addEventListener('mouseup', stopDragging);
+};
+
+const dragModal = (e) => {
+  if (!isDragging) return;
+  gptModalLeft.value = e.clientX - offsetX;
+  gptModalTop.value = e.clientY - offsetY;
+};
+
+const stopDragging = () => {
+  isDragging = false;
+  document.removeEventListener('mousemove', dragModal);
+  document.removeEventListener('mouseup', stopDragging);
+};
+
+const openGptQueryModal = () => {
+  showGptQueryModal.value = true;
+  gptQueryText.value = '';
+  gptAnswer.value = '';
+};
+
+const closeGptQueryModal = () => {
+  showGptQueryModal.value = false;
+};
+
+const submitGptQuery = async () => {
+  isAsking.value = true;
+  try {
+    const res = await api.get('/applyhome/ms/searchDetail', {
+      params: {
+        idx: route.params.id,
+        request: gptQueryText.value
+      }
+    });
+    gptAnswer.value = res.data;
+  } catch (err) {
+    gptAnswer.value = '답변을 가져오는 데 실패했습니다.';
+    console.error('GPT 분석 실패:', err);
+  } finally {
+    isAsking.value = false;
+  }
+};
 
 const openPaymentModal = () => {
   showModal.value = false;
@@ -124,8 +219,8 @@ const handleGptMoreClick = () => {
   } else if (role === 'USER') {
     showModal.value = true;
   } else {
-    // MEMBERSHIP 이상이면 GPT 질의 모달이나 페이지 이동 예정
-    alert('질문 기능은 아직 구현되지 않았습니다.');
+    // MEMBERSHIP 이상
+    openGptQueryModal();
   }
 };
 
@@ -370,7 +465,7 @@ onMounted(async () => {
     background: white;
     padding: 2rem;
     border-radius: 8px;
-    width: 300px;
+    width: 400px;
     text-align: center;
 
     .modal-buttons {
@@ -436,4 +531,77 @@ onMounted(async () => {
     }
   }
 }
+.modal-content.gpt-modal {
+    position: absolute; // 드래그 가능하게
+    width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: move;
+
+        h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        }
+
+        .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        }
+    }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    textarea {
+      resize: vertical;
+      padding: 0.6rem;
+      font-size: 1rem;
+      min-height: 100px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 0.6rem;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      border: none;
+
+      &:first-of-type {
+        background-color: var(--color-primary);
+        color: white;
+
+        &:disabled {
+          background-color: gray;
+          cursor: not-allowed;
+        }
+      }
+
+      &:last-of-type {
+        background-color: #ddd;
+        color: black;
+      }
+    }
+  }
+
+  .gpt-answer {
+    margin-top: 1.5rem;
+    background-color: #f8f8f8;
+    padding: 1rem;
+    border-radius: 6px;
+    line-height: 1.6;
+    white-space: pre-line;
+  }
+}
+
 </style>
