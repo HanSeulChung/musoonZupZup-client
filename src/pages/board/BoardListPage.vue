@@ -12,18 +12,33 @@
     </div>
 
     <div class="post-list">
-      <div class="post-card" v-for="post in posts.content" :key="post.idx">
+      <div
+        class="post-card"
+        v-for="post in posts.content"
+        :key="post.idx"
+        :class="{ hiddenPost: post.blind === 1 }"
+      >
         <div class="card-left">
           <h3 class="title">
-            <router-link :to="`/${boardTypeUrl}/${post.idx}`">{{
-              post.title
-            }}</router-link>
+            <router-link :to="`/${boardTypeUrl}/${post.idx}`">
+              {{ post.title }}
+              <span v-if="isAdmin && post.blind === 1" class="blind-tag">[숨김됨]</span>
+            </router-link>
           </h3>
+          
+          <div v-if="isAdmin && post.blind === 1" class="hidden-label">
+            🔒 숨김된 게시물입니다.
+          </div>
+
           <div class="stats" v-if="boardType === 'community'">
             <span>조회수 {{ post.views }}</span>
             <span>댓글수 {{ post.commentCnt }}</span>
             <span>좋아요 {{ post.like }}</span>
             <span>싫어요 {{ post.disLike }}</span>
+          </div>
+          <div class="stats" v-if="boardType === 'notice'">
+            <span>조회수 {{ post.views }}</span>
+            <span>댓글수 {{ post.commentCnt }}</span>
           </div>
         </div>
         <div class="card-right">
@@ -53,6 +68,7 @@ import api from "@/libs/axios";
 
 const auth = useAuthStore();
 const { role, isLoggedIn } = storeToRefs(auth);
+const isAdmin = computed(() => role.value === 'ADMIN' || role.value === 'MASTER');
 
 const props = defineProps({
   boardType: { type: String, required: true }, // 'community' or 'notice'
@@ -93,6 +109,8 @@ const fetchPosts = async () => {
       params: { page: currentPage.value, size: pageSize },
     });
     posts.value = res.data;
+    console.log("res: ", res.data);
+    console.log("posts: ", posts.value);
   } catch (err) {
     console.error("게시글 목록 조회 실패:", err);
   }
@@ -252,4 +270,18 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
     }
   }
 }
+.hiddenPost {
+  background-color: #fff0f0; // 연한 붉은 배경
+  opacity: 1;
+  border: 1px dashed red;
+
+  .title {
+    color: red;
+
+    .blind-tag {
+      color: red;
+    }
+  }
+}
+
 </style>
