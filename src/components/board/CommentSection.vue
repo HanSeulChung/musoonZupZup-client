@@ -67,7 +67,10 @@ const fetchComments = async () => {
       : `/community/comment/${props.communityIdx}`;
   try {
     const res = await api.get(endpoint);
-    comments.value = res.data.commentList?.content || [];
+    comments.value =
+      props.boardType === "notice"
+        ? res.data.content || []
+        : res.data.commentList?.content || [];
     console.log("[댓글 목록]", comments.value);
   } catch (err) {
     console.error("댓글 불러오기 실패:", err);
@@ -77,7 +80,6 @@ const fetchComments = async () => {
 // 댓글 등록
 const submitComment = async () => {
   if (!authStore.isLoggedIn || !newComment.value.trim()) return;
-  // TODO: 댓글 endpoint api 연결
   const endpoint =
     props.boardType === "notice"
       ? `/noticeComment/member/post/${props.communityIdx}`
@@ -86,6 +88,7 @@ const submitComment = async () => {
     await api.post(endpoint, {
       comment: newComment.value,
       memberId: props.myMemberId,
+      noticeIdx: props.communityIdx
     });
     newComment.value = "";
     await fetchComments();
