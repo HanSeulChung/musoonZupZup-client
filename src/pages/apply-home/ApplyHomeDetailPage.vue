@@ -24,11 +24,13 @@
           <a :href="detail?.applyhomeUrl" class="external-link" target="_blank">청약홈 바로가기 →</a>
         </div>
         <p class="address">{{ detail?.houseAddress }}</p>
+        <p>공급 세대 수: {{ detail?.suplyCount }}세대</p>
+        <p>공급 금액: {{ formatPriceToKorean(detail?.suplyPrice) }}</p>
         <p>공고일: {{ formatDate(detail?.pblancDate) }}</p>
         <p>공고 번호: {{ detail?.pblancNo }}</p>
         <p>당첨 발표일: {{ formatDate(detail?.applyAnnounceDate) }}</p>
         <p>청약기간: {{ formatDate(detail?.applyStartDate) }} ~ {{ formatDate(detail?.applyEndDate) }}</p>
-      </div>
+    </div>
 
       <div class="gpt-comment">
         <div class="gpt-comment-header">
@@ -282,6 +284,7 @@ const fetchDetailHome = async () => {
     params: { idx: route.params.id }
   });
   detail.value = res.data.pblanc;
+  console.log(detail.value);
 };
 
 const fetchDetailGpt = async () => {
@@ -292,6 +295,19 @@ const fetchDetailGpt = async () => {
 };
 
 const formatDate = (str) => new Date(str).toLocaleDateString();
+const formatPriceToKorean = (price) => {
+  if (!price && price !== 0) return '-';
+  const amount = price * 10000;
+
+  const 억 = Math.floor(amount / 100000000); // 1억 = 100,000,000
+  const 만 = Math.floor((amount % 100000000) / 10000); // 나머지 만 단위
+
+  let result = '';
+  if (억 > 0) result += `${억}억`;
+  if (만 > 0) result += ` ${만}만원`;
+
+  return result.trim();
+};
 
 const loadMap = async () => {
   if (!detail.value?.geo) return;
