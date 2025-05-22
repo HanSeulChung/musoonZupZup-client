@@ -9,7 +9,14 @@
     </span>
     </h2>
     <div class="meta-info">
-      <span>작성자: {{ detail?.memberId || "작성자 없음" }}</span>
+      <span>
+        작성자:
+        {{
+          (authStore.role === 'ADMIN' || authStore.role === 'MASTER')
+            ? '관리자'
+            : detail?.memberId || '작성자 없음'
+        }}
+      </span>
       <span>작성일: {{ formatDate(detail?.createdAt) }}</span>
       <span>조회수 {{ detail?.views ?? 0 }}회</span>
     </div>
