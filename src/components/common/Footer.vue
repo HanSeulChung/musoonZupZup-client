@@ -1,7 +1,7 @@
 <template>
     <footer class="footer">
         <p>© 2025 무순줍줍. All rights reserved. </p>
-        <p class="team">Team 정한슬 · 박재환</p>
+        <p class="team">Team 정한슬 · 박재환 · 신해봄</p>
     </footer>
 </template>
 
