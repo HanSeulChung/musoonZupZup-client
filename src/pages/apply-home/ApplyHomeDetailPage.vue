@@ -84,21 +84,12 @@
     />
 
     <!-- 장소 선택 모달 -->
-    <div v-if="showTransitModal" class="modal-backdrop">
-      <div class="modal-content">
-        <h3>출발지 선택</h3>
-        <select v-model="selectedPlace">
-          <option disabled value="">출발지를 선택하세요</option>
-          <option v-for="place in userPlaces" :key="place.idx" :value="place">
-            {{ place.alias }} ({{ place.address }})
-          </option>
-        </select>
-        <div class="modal-buttons" style="margin-top: 1rem;">
-          <button @click="requestTransitRoute" :disabled="!selectedPlace">경로 보기</button>
-          <button @click="showTransitModal = false">취소</button>
-        </div>
-      </div>
-    </div>
+    <PlaceSelectModal
+      v-if="showTransitModal"
+      :places="userPlaces"
+      @submit="handleTransitSubmit"
+      @close="showTransitModal = false"
+    />
     <!-- 경로 안내 모달 -->
     <div v-if="showTmapModal" class="modal-backdrop">
       <div class="modal-content tmap-modal">
@@ -118,6 +109,8 @@ import { formatDate, formatPriceToKorean } from '@/utils/format';
 import MembershipConfirmModal from '@/components/apply-home/modals/MembershipConfirmModal.vue';
 import MembershipPaymentModal from '@/components/apply-home/modals/MembershipPaymentModal.vue';
 import GptQueryModal from '@/components/apply-home/modals/GptQueryModal.vue';
+import PlaceSelectModal from '@/components/apply-home/modals/PlaceSelectModal.vue';
+
 const authStore = useAuthStore();
 const liked = ref(false);
 const route = useRoute();
@@ -211,6 +204,12 @@ const handleGptMoreClick = () => {
     // MEMBERSHIP 이상
     openGptQueryModal();
   }
+};
+
+const handleTransitSubmit = (place) => {
+  selectedPlace.value = place;
+  requestTransitRoute();
+  showTransitModal.value = false;
 };
 
 const fetchLikeStatus = async () => {
