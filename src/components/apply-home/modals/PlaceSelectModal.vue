@@ -1,15 +1,36 @@
 <template>
   <div class="modal-backdrop">
     <div class="modal-content">
-      <h3>출발지 선택</h3>
-      <select v-model="selected">
+      <h3>출발지와 이동 수단 선택</h3>
+
+      <!-- 출발지 선택 -->
+      <select v-model="selectedPlace">
         <option disabled value="">출발지를 선택하세요</option>
         <option v-for="place in places" :key="place.idx" :value="place">
           {{ place.alias }} ({{ place.address }})
         </option>
       </select>
-      <div class="modal-buttons" style="margin-top: 1rem;">
-        <button @click="$emit('submit', selected)" :disabled="!selected">경로 보기</button>
+
+      <!-- 이동 수단 선택 -->
+      <div class="mode-select">
+        <label>
+          <input type="radio" value="car" v-model="selectedMode" />
+          자동차
+        </label>
+        <label>
+          <input type="radio" value="pedestrian" v-model="selectedMode" />
+          도보
+        </label>
+      </div>
+
+      <!-- 버튼 -->
+      <div class="modal-buttons">
+        <button
+          @click="$emit('submit', { place: selectedPlace, mode: selectedMode })"
+          :disabled="!selectedPlace || !selectedMode"
+        >
+          경로 보기
+        </button>
         <button @click="$emit('close')">취소</button>
       </div>
     </div>
@@ -17,21 +38,23 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch } from 'vue';
 
 const props = defineProps({
   places: Array,
-})
+});
+const emit = defineEmits(['submit', 'close']);
 
-const emit = defineEmits(['submit', 'close'])
+const selectedPlace = ref(null);
+const selectedMode = ref(null);
 
-const selected = ref(null)
 watch(
   () => props.places,
   () => {
-    selected.value = null // 목록 변경 시 선택 초기화
+    selectedPlace.value = null;
+    selectedMode.value = null;
   }
-)
+);
 </script>
 
 <style scoped lang="scss">
@@ -68,12 +91,28 @@ watch(
     font-size: 0.95rem;
     border-radius: 6px;
     border: 1px solid #ccc;
+    margin-bottom: 1rem;
+  }
+
+  .mode-select {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    label {
+      font-size: 0.95rem;
+      cursor: pointer;
+
+      input {
+        margin-right: 0.4rem;
+      }
+    }
   }
 
   .modal-buttons {
     display: flex;
     justify-content: space-between;
-    margin-top: 1rem;
 
     button {
       padding: 0.5rem 1rem;

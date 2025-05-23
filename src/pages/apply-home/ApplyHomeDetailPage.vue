@@ -207,9 +207,10 @@ const handleGptMoreClick = () => {
   }
 };
 
-const handleTransitSubmit = (place) => {
+const handleTransitSubmit = ({ place, mode }) => {
   selectedPlace.value = place;
-  requestTransitRoute();
+  selectedMode.value = mode;
+  requestTransitRoute(); // 이 안에서 mode에 따라 API 분기 처리
   showTransitModal.value = false;
 };
 
@@ -280,8 +281,7 @@ const fetchUserPlaces = async () => {
   }
 };
 const selectedPlace = ref(null);
-
-import TmapViewer from "@/components/apply-home/modals/TmapModal.vue";
+const selectedMode = ref(null);
 const transitResult = ref([]); // POST 결과
 const showTmapModal = ref(false);
 
@@ -299,24 +299,27 @@ const requestTransitRoute = async () => {
     endY: detail.value.geo.y
   };
 
-  console.log("자동차 경로 요청 reqBody: ", reqBody)
+  const mode = selectedMode.value === 'pedestrian' ? 'pedestrian' : 'car';
+  const url = mode === 'pedestrian' ? '/route/pedestrian' : '/route/car';
+
+  console.log(`${mode.toUpperCase()} 경로 요청 reqBody:`, reqBody);
+
   try {
-    const res = await api.post('/route/car', reqBody);
+    const res = await api.post(url, reqBody);
     transitResult.value = res.data.route.features;
     showTmapModal.value = true;
-    console.log("res.data: ", res.data);
 
     nextTick(() => {
       setTimeout(() => {
-        window.dispatchEvent(new Event('resize')); // 지도 리사이즈 유도
+        window.dispatchEvent(new Event('resize'));
       }, 100);
     });
-    console.log(transitResult.value);
   } catch (err) {
-    alert("자동차 경로 요청 실패");
+    alert(`${mode === 'pedestrian' ? '도보' : '자동차'} 경로 요청 실패`);
     console.error(err);
   }
 };
+
 
 const openTransitModal = async () => {
   await fetchUserPlaces(); // 내 장소 목록 불러오기
