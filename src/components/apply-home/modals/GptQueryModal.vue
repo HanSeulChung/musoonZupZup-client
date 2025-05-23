@@ -161,6 +161,7 @@ onUnmounted(() => {
       border-radius: 8px;
       border: 1px solid #ccc;
       transition: border 0.2s;
+      font-family: inherit;
 
       &:focus {
         border-color: var(--color-primary);
