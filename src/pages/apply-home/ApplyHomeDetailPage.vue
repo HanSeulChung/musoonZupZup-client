@@ -74,49 +74,14 @@
 
 
     <!-- GPT 질문 모달 -->
-    <div
-    v-if="showGptQueryModal"
-    class="modal-backdrop"
-    @mousedown.self="closeGptQueryModal"
-    >
-        <div
-            class="modal-content gpt-modal"
-            ref="gptModal"
-            :style="{ top: gptModalTop + 'px', left: gptModalLeft + 'px' }"
-        >
-            <!-- 드래그 영역 -->
-            <div class="modal-header" @mousedown="startDragging">
-            <h3>GPT에게 물어보기</h3>
-            <button class="close-btn" @click="closeGptQueryModal">×</button>
-            </div>
-
-            <p>궁금한 내용을 입력하세요:</p>
-
-            <form @submit.prevent="submitGptQuery">
-            <textarea v-model="gptQueryText" placeholder="예: 주변 교통은 어떤가요?" required />
-            <button type="submit" class="submit-btn" :disabled="isAsking">
-                {{ isAsking ? '질문 중...' : '질문하기' }}
-            </button>
-            </form>
-
-            <div class="gpt-answer" v-if="isAsking || gptAnswer">
-            <h4>답변 결과</h4>
-            <p v-if="isAsking" class="loading-animation">GPT가 답변을 작성 중입니다...</p>
-            <p v-else>{{ gptAnswer }}</p>
-            </div>
-            
-            <div v-if="gptHistory.length > 0" class="gpt-history">
-            <h4>이전 질문 내역</h4>
-            <ul>
-                <li v-for="(item, index) in gptHistory" :key="index">
-                <strong>Q.</strong> {{ item.request }}  
-                <br />
-                <strong>A.</strong> {{ item.comment }}
-                </li>
-            </ul>
-            </div>
-        </div>
-    </div>
+    <GptQueryModal
+      v-if="showGptQueryModal"
+      :isAsking="isAsking"
+      :answer="gptAnswer"
+      :history="gptHistory"
+      @submit-query="submitGptQuery"
+      @close="closeGptQueryModal"
+    />
 
     <!-- 장소 선택 모달 -->
     <div v-if="showTransitModal" class="modal-backdrop">
@@ -152,7 +117,7 @@ import { useAuthStore } from '@/stores/auth';
 import { formatDate, formatPriceToKorean } from '@/utils/format';
 import MembershipConfirmModal from '@/components/apply-home/modals/MembershipConfirmModal.vue';
 import MembershipPaymentModal from '@/components/apply-home/modals/MembershipPaymentModal.vue';
-
+import GptQueryModal from '@/components/apply-home/modals/GptQueryModal.vue';
 const authStore = useAuthStore();
 const liked = ref(false);
 const route = useRoute();
@@ -170,15 +135,6 @@ const gptQueryText = ref('');
 const gptAnswer = ref('');
 const isAsking = ref(false);
 
-const gptModal = ref(null);
-const gptModalTop = ref(100);
-const gptModalLeft = ref(window.innerWidth / 2 - 300);
-
-let isDragging = false;
-let offsetX = 0;
-let offsetY = 0;
-
-
 const gptHistory = ref([]);
 const fetchGptHistory = async () => {
   try {
@@ -194,26 +150,6 @@ const fetchGptHistory = async () => {
 };
 
 
-const startDragging = (e) => {
-  isDragging = true;
-  offsetX = e.clientX - gptModalLeft.value;
-  offsetY = e.clientY - gptModalTop.value;
-  document.addEventListener('mousemove', dragModal);
-  document.addEventListener('mouseup', stopDragging);
-};
-
-const dragModal = (e) => {
-  if (!isDragging) return;
-  gptModalLeft.value = e.clientX - offsetX;
-  gptModalTop.value = e.clientY - offsetY;
-};
-
-const stopDragging = () => {
-  isDragging = false;
-  document.removeEventListener('mousemove', dragModal);
-  document.removeEventListener('mouseup', stopDragging);
-};
-
 const openGptQueryModal =  async () => {
   showGptQueryModal.value = true;
   gptQueryText.value = '';
@@ -225,13 +161,13 @@ const closeGptQueryModal = () => {
   showGptQueryModal.value = false;
 };
 
-const submitGptQuery = async () => {
+const submitGptQuery = async (query) => {
   isAsking.value = true;
   try {
     const res = await api.get('/applyhome/ms/searchDetail', {
       params: {
         idx: route.params.id,
-        request: gptQueryText.value
+        request: query,
       }
     });
     gptAnswer.value = res.data;
