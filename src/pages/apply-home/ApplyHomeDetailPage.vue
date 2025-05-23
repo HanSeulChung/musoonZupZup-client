@@ -59,15 +59,11 @@
 
   <Teleport to="body">
     <!-- 멤버십 전환 안내 모달 -->
-    <div v-if="showModal" class="modal-backdrop">
-      <div class="modal-content">
-        <p>멤버십 전환이 필요합니다. 전환 하시겠습니까?</p>
-        <div class="modal-buttons">
-          <button @click="openPaymentModal">예</button>
-          <button @click="showModal = false">아니오</button>
-        </div>
-      </div>
-    </div>
+    <MembershipConfirmModal
+      v-if="showModal"
+      @confirm="openPaymentModal"
+      @cancel="showModal = false"
+    />
 
     <!-- 결제 모달 -->
     <div v-if="showPaymentModal" class="modal-backdrop">
@@ -166,6 +162,7 @@ import api from '@/libs/axios';
 import { loadKakaoMap } from '@/libs/kakaoLoader';
 import { useAuthStore } from '@/stores/auth';
 import { formatDate, formatPriceToKorean } from '@/utils/format';
+import MembershipConfirmModal from '@/components/apply-home/modals/MembershipConfirmModal.vue';
 
 const authStore = useAuthStore();
 const liked = ref(false);
@@ -351,7 +348,7 @@ const fetchUserPlaces = async () => {
 };
 const selectedPlace = ref(null);
 
-import TmapViewer from "@/components/apply-home/TmapViewer.vue";
+import TmapViewer from "@/components/apply-home/modals/TmapModal.vue";
 const transitResult = ref([]); // POST 결과
 const showTmapModal = ref(false);
 
