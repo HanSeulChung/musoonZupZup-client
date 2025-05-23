@@ -2,6 +2,30 @@
 <section class="apply-home-page">
     <h2 class="page-title">청약 공고 목록</h2>
 
+    <div class="search-bar">
+    <select v-model="searchKey">
+        <option value="">검색 기준</option>
+        <option value="1">주택 관리 번호</option>
+        <option value="2">공고 번호</option>
+        <option value="3">지역</option>
+        <option value="4">주택명</option>
+    </select>
+    <input v-model="searchValue" type="text" placeholder="검색어 입력" />
+    
+    <select v-model="sortKey">
+        <option value="">정렬 기준</option>
+        <option value="1">가격 순</option>
+        <option value="2">공고 날짜 순</option>
+        <option value="3">청약 시작일 순</option>
+        <option value="4">청약 종료일 순</option>
+        <option value="5">청약 당첨자 발표 순</option>
+    </select>
+    <select v-model="sortValue">
+        <option value="DESC">내림차순</option>
+        <option value="ASC">오름차순</option>
+    </select>
+    <button @click="applyFilter">조회</button>
+    </div>
     <div class="apply-card" v-for="item in homes.content" :key="item.idx">
         <div class="card-header">
             <h3 class="house-name">{{ item.houseName }}</h3>
@@ -51,17 +75,28 @@ const homes = ref({
 const currentPage = ref(0);
 const pageSize = 10;
 
+const searchKey = ref('');
+const searchValue = ref('');
+const sortKey = ref('');
+const sortValue = ref('ASC');
+
+const applyFilter = () => {
+  currentPage.value = 0;
+  fetchHomes();
+};
+
 const fetchHomes = async () => {
-    const res = await api.get('/applyhome/list', {
-        params: {
-        page: currentPage.value,
-        size: pageSize,
-        sortKey: 'pblancDate',
-        sortOrder: 'DESC',
-        },
-    });
-    // console.log(res);
-    homes.value = res.data;
+  const res = await api.get('/applyhome/list', {
+    params: {
+      page: currentPage.value,
+      size: pageSize,
+      key: searchKey.value || undefined,
+      value: searchValue.value || undefined,
+      sortKey: sortKey.value || undefined,
+      sortValue: sortValue.value || undefined,
+    },
+  });
+  homes.value = res.data;
 };
 
 const changePage = (page) => {
@@ -180,6 +215,35 @@ onMounted(fetchHomes);
         opacity: 0.4;
         cursor: not-allowed;
       }
+    }
+  }
+}
+
+.search-bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  justify-content: space-around;
+
+  select, input {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+  }
+
+  button {
+    padding: 0.5rem 1rem;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+
+    &:hover {
+      background-color: var(--color-primary-container);
     }
   }
 }
