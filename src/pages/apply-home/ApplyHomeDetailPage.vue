@@ -91,11 +91,11 @@
       @close="showTransitModal = false"
     />
     <!-- 경로 안내 모달 -->
-    <div v-if="showTmapModal" class="modal-backdrop">
-      <div class="modal-content tmap-modal">
-        <TmapViewer :transitResult="transitResult" @close="showTmapModal = false" />
-      </div>
-    </div>
+    <TmapModal
+      v-if="showTmapModal"
+      :transitResult="transitResult"
+      @close="showTmapModal = false"
+    />
   </Teleport>
 </template>
 
@@ -110,6 +110,7 @@ import MembershipConfirmModal from '@/components/apply-home/modals/MembershipCon
 import MembershipPaymentModal from '@/components/apply-home/modals/MembershipPaymentModal.vue';
 import GptQueryModal from '@/components/apply-home/modals/GptQueryModal.vue';
 import PlaceSelectModal from '@/components/apply-home/modals/PlaceSelectModal.vue';
+import TmapModal from '@/components/apply-home/modals/TmapModal.vue';
 
 const authStore = useAuthStore();
 const liked = ref(false);
