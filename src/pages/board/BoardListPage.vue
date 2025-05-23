@@ -11,6 +11,29 @@
       </button>
     </div>
 
+    <div class="search-bar">
+      <select v-model="searchKey">
+        <option value="">검색 기준</option>
+        <option value="1">제목</option>
+        <option value="2">내용</option>
+      </select>
+      <input v-model="searchValue" type="text" placeholder="검색어 입력" />
+
+      <select v-model="sortKey">
+        <option value="">정렬 기준</option>
+        <option value="1">작성일</option>
+        <option value="2">조회수</option>
+        <option v-if="boardType === 'community'" value="3">좋아요</option>
+        <option v-if="boardType === 'community'" value="4">인기순(좋아요 + 조회수)</option>
+      </select>
+      <select v-model="sortValue">
+        <option value="DESC">내림차순</option>
+        <option value="ASC">오름차순</option>
+      </select>
+
+      <button @click="applyFilter">조회</button>
+    </div>
+
     <div class="post-list">
       <div
         class="post-card"
@@ -25,7 +48,6 @@
               <span v-if="isAdmin && post.blind === 1" class="blind-tag">[숨김됨]</span>
             </router-link>
           </h3>
-          
           <div v-if="isAdmin && post.blind === 1" class="hidden-label">
             🔒 숨김된 게시물입니다.
           </div>
@@ -70,49 +92,50 @@ const { role, isLoggedIn } = storeToRefs(auth);
 const isAdmin = computed(() => role.value === 'ADMIN' || role.value === 'MASTER');
 
 const props = defineProps({
-  boardType: { type: String, required: true }, // 'community' or 'notice'
+  boardType: { type: String, required: true },
 });
 
 const router = useRouter();
-const boardTypeUrl = computed(() => {
-  return props.boardType === "notice" ? "notices" : "communities";
-});
+const boardTypeUrl = computed(() => props.boardType === "notice" ? "notices" : "communities");
 
-// 게시글 작성 버튼을 보여줄지 여부
 const canWrite = computed(() => {
   if (!isLoggedIn.value) return false;
-  if (props.boardType === "notice") {
-    return role.value === "ADMIN" || role.value === "MASTER";
-  }
-  if (props.boardType === "community") {
-    return role.value === "USER" || role.value === "MEMBERSHIP";
-  }
+  if (props.boardType === "notice") return role.value === "ADMIN" || role.value === "MASTER";
+  if (props.boardType === "community") return role.value === "USER" || role.value === "MEMBERSHIP";
   return false;
 });
 
-const posts = ref({
-  content: [],
-  totalPages: 0,
-  totalElements: 0,
-  first: true,
-  last: false,
-});
+const posts = ref({ content: [], totalPages: 0, totalElements: 0, first: true, last: false });
 const currentPage = ref(0);
 const pageSize = 10;
 
+const searchKey = ref("");
+const searchValue = ref("");
+const sortKey = ref("");
+const sortValue = ref("DESC");
+
 const fetchPosts = async () => {
   try {
-    const endpoint =
-      props.boardType === "notice" ? "/notice/list" : "/community/list";
+    const endpoint = props.boardType === "notice" ? "/notice/list" : "/community/list";
     const res = await api.get(endpoint, {
-      params: { page: currentPage.value, size: pageSize },
+      params: {
+        page: currentPage.value,
+        size: pageSize,
+        key: searchKey.value || undefined,
+        value: searchValue.value || undefined,
+        sortKey: sortKey.value || undefined,
+        sortValue: sortValue.value || undefined,
+      },
     });
     posts.value = res.data;
-    console.log("res: ", res.data);
-    console.log("posts: ", posts.value);
   } catch (err) {
     console.error("게시글 목록 조회 실패:", err);
   }
+};
+
+const applyFilter = () => {
+  currentPage.value = 0;
+  fetchPosts();
 };
 
 const changePage = (page) => {
@@ -133,7 +156,7 @@ const goToCreatePage = () => {
 };
 
 onMounted(fetchPosts);
-watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
+watch(() => props.boardType, fetchPosts);
 </script>
 
 <style scoped lang="scss">
@@ -184,6 +207,35 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
     }
   }
 
+  .search-bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+
+    select,
+    input {
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: var(--color-primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+
+      &:hover {
+        background-color: var(--color-primary-container);
+      }
+    }
+  }
+
   .post-list {
     display: flex;
     flex-direction: column;
@@ -191,6 +243,7 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
   }
 
   .post-card {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     padding: 1.2rem 1.5rem;
@@ -269,8 +322,9 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
     }
   }
 }
+
 .hiddenPost {
-  background-color: #fff0f0; // 연한 붉은 배경
+  background-color: #fff0f0;
   opacity: 1;
   border: 1px dashed red;
 
@@ -282,5 +336,4 @@ watch(() => props.boardType, fetchPosts); // boardType이 바뀌면 다시 fetch
     }
   }
 }
-
 </style>
