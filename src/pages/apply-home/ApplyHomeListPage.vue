@@ -36,6 +36,7 @@
             <p>📅 공고일: {{ formatDate(item.pblancDate) }}</p>
             <p>🏠 공급: {{ item.suplyCount }}세대 / {{ formatPriceToKorean(item.suplyPrice) }}</p>
             <p>📆 청약: {{ formatDate(item.applyStartDate) }} ~ {{ formatDate(item.applyEndDate) }}</p>
+            <p>🎉 청약 발표일: {{ formatDate(item.applyAnnounceDate) }}</p>
         </div>
 
         <div class="card-footer">
