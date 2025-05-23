@@ -1,49 +1,57 @@
-<!-- src/components/apply-home/modals/TmapModal.vue -->
 <template>
   <div class="modal-backdrop">
     <div class="modal-content tmap-modal">
       <button class="close-btn" @click="$emit('close')">×</button>
+      <div v-if="summaryText" class="summary-text">{{ summaryText }}</div>
       <div class="tmap-box" id="tmap-container"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, watch, nextTick, ref } from 'vue';
+import { onMounted, watch, nextTick, computed } from 'vue';
 
 const props = defineProps({
   transitResult: Array
 });
-const emit = defineEmits(['close']);
-const mapRef = ref(null);
+
+const summaryText = computed(() => {
+  const first = props.transitResult?.[0];
+  if (!first?.properties) return '';
+
+  const distance = (first.properties.totalDistance / 1000).toFixed(1);
+  const time = Math.round(first.properties.totalTime / 60);
+  const fare = first.properties.totalFare?.toLocaleString() ?? '0';
+  const taxiFare = first.properties.taxiFare?.toLocaleString() ?? '0';
+
+  return `총 거리: ${distance}km · 총 시간: ${time}분 · 통행료: ${fare}원 · 예상 택시 요금: ${taxiFare}원`;
+});
 
 function drawRoute(map) {
   props.transitResult.forEach((feature) => {
     const { geometry, properties } = feature;
 
-    // 📍 시작/도착 마커
+    // 📍 마커
     if (geometry.type === 'Point') {
       const [lon, lat] = geometry.coordinates;
       const position = new window.Tmapv2.LatLng(lat, lon);
 
-      let iconUrl = '';
+      let iconUrl = 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_b_m_p.png';
       if (properties.pointType === 'S') {
         iconUrl = 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_s.png';
       } else if (properties.pointType === 'E') {
         iconUrl = 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_e.png';
       }
 
-      if (iconUrl) {
-        new window.Tmapv2.Marker({
-          position,
-          icon: iconUrl,
-          iconSize: new window.Tmapv2.Size(24, 38),
-          map,
-        });
-      }
+      new window.Tmapv2.Marker({
+        position,
+        icon: iconUrl,
+        iconSize: new window.Tmapv2.Size(24, 38),
+        map,
+      });
     }
 
-    // 📍 경로 선
+    // 📍 경로 라인
     if (geometry.type === 'LineString') {
       const path = geometry.coordinates.map(([lon, lat]) =>
         new window.Tmapv2.LatLng(lat, lon)
@@ -64,21 +72,34 @@ const initializeMap = async () => {
   const container = document.getElementById('tmap-container');
   if (!container) return;
 
-  container.innerHTML = ''; // 이전 지도 제거
-  const center = new window.Tmapv2.LatLng(37.5665, 126.9780);
-
+  container.innerHTML = '';
   const map = new window.Tmapv2.Map(container, {
-    center,
+    center: new window.Tmapv2.LatLng(37.5665, 126.9780), // fallback
     width: '100%',
     height: '600px',
     zoom: 14,
   });
 
-  mapRef.value = map;
+  // ✅ bounds 계산
+  const bounds = new window.Tmapv2.LatLngBounds();
 
-  if (props.transitResult?.length > 0) {
-    drawRoute(map);
-  }
+  props.transitResult.forEach((feature) => {
+    const { geometry } = feature;
+
+    if (geometry.type === 'Point') {
+      const [lon, lat] = geometry.coordinates;
+      bounds.extend(new window.Tmapv2.LatLng(lat, lon));
+    }
+
+    if (geometry.type === 'LineString') {
+      geometry.coordinates.forEach(([lon, lat]) => {
+        bounds.extend(new window.Tmapv2.LatLng(lat, lon));
+      });
+    }
+  });
+
+  map.fitBounds(bounds); // ✅ 중심 및 줌 자동 설정
+  drawRoute(map);
 };
 
 onMounted(() => {
@@ -89,13 +110,10 @@ watch(
   () => props.transitResult,
   () => {
     initializeMap();
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 150);
-  }
+  },
+  { immediate: true }
 );
 </script>
-
 
 <style scoped lang="scss">
 .modal-backdrop {
@@ -141,6 +159,16 @@ watch(
       transform: scale(1.2);
       color: #d62828;
     }
+  }
+
+  .summary-text {
+    font-size: 1rem;
+    font-weight: 500;
+    background-color: #f7f7f7;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    color: #333;
   }
 
   .tmap-box {
