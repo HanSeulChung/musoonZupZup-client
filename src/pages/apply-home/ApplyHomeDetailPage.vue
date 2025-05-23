@@ -295,27 +295,50 @@ const selectedMode = ref(null);
 const transitResult = ref([]); // POST 결과
 const showTmapModal = ref(false);
 
+function getDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // 지구 반지름 (km)
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // km
+}
+
 const requestTransitRoute = async () => {
   if (!selectedPlace.value || !detail.value?.geo) return;
+
+  const startLat = selectedPlace.value.y;
+  const startLon = selectedPlace.value.x;
+  const endLat = detail.value.geo.y;
+  const endLon = detail.value.geo.x;
+
+  const distanceKm = getDistanceKm(startLat, startLon, endLat, endLon);
+  if (selectedMode.value === 'pedestrian' && distanceKm > 50) {
+    alert('출발지와 도착지 간의 직선거리가 50km를 초과하여 도보 길찾기를 제공하지 않습니다.');
+    return;
+  }
 
   const reqBody = {
     startPlaceAlias: selectedPlace.value.alias,
     startPlaceAddress: selectedPlace.value.address,
-    startX: selectedPlace.value.x,
-    startY: selectedPlace.value.y,
+    startX: startLon,
+    startY: startLat,
     endPlaceAlias: detail.value.houseName,
     endPlaceAddress: detail.value.houseAddress,
-    endX: detail.value.geo.x,
-    endY: detail.value.geo.y
+    endX: endLon,
+    endY: endLat
   };
 
-  const mode = selectedMode.value === 'pedestrian' ? 'pedestrian' : 'car';
-  const url = mode === 'pedestrian' ? '/route/pedestrian' : '/route/car';
-
-  console.log(`${mode.toUpperCase()} 경로 요청 reqBody:`, reqBody);
+  const endpoint = selectedMode.value === 'car' ? '/route/car' : '/route/pedestrian';
 
   try {
-    const res = await api.post(url, reqBody);
+    const res = await api.post(endpoint, reqBody);
+    if (!res.data?.route?.features?.length) throw new Error('경로 없음');
+
     transitResult.value = res.data.route.features;
     showTmapModal.value = true;
 
@@ -325,7 +348,7 @@ const requestTransitRoute = async () => {
       }, 100);
     });
   } catch (err) {
-    alert(`${mode === 'pedestrian' ? '도보' : '자동차'} 경로 요청 실패`);
+    alert("경로를 찾을 수 없습니다.");
     console.error(err);
   }
 };
