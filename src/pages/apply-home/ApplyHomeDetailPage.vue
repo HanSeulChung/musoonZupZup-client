@@ -307,7 +307,7 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // km
 }
-
+import axios from 'axios'
 const requestTransitRoute = async () => {
   if (!selectedPlace.value || !detail.value?.geo) return;
 
@@ -333,13 +333,52 @@ const requestTransitRoute = async () => {
     endY: endLat
   };
 
-  const endpoint = selectedMode.value === 'car' ? '/route/car' : '/route/pedestrian';
+  const directBody = {
+    startPlaceAlias: selectedPlace.value.alias,
+    startPlaceAddress: selectedPlace.value.address,
+    startX: startLon,
+    startY: startLat,
+    endPlaceAlias: detail.value.houseName,
+    endPlaceAddress: detail.value.houseAddress,
+    endX: endLon,
+    endY: endLat,
+    count: 1,
+    lang: 0,
+    format: 'json'
+  };
+
+  let endpoint = '/route/car';
+  if (selectedMode.value === 'pedestrian') {
+    endpoint = '/route/pedestrian';
+  } else if (selectedMode.value === 'transit') {
+    // endpoint = '/route/transit';
+    endpoint = '';
+  }
 
   try {
-    const res = await api.post(endpoint, reqBody);
-    if (!res.data?.route?.features?.length) throw new Error('경로 없음');
+    // const res = await api.post(endpoint, reqBody);
+    const res = await axios.post('https://apis.openapi.sk.com/transit/routes', directBody, {
+    headers: {
+      'accept': 'application/json',
+      'Content-Type': 'application/json',
+      'appKey': 'qrd5ZOjQHx2wTJfbCn8aU30sFZW1WtLK65E6B6dI'
+    }
+  });
+    console.log("res: ", res);
 
-    transitResult.value = res.data.route.features;
+    if (selectedMode.value === 'transit') {
+      const itineraries = res.data.metaData?.plan?.itineraries;
+      if (!itineraries || itineraries.length === 0) throw new Error('대중교통 경로 없음');
+      transitResult.value = itineraries;
+    } else {
+      const features = res.data.route?.features;
+      if (!features || features.length === 0) {
+        if (selectedMode.value === 'pedestrian') throw new Error('도보 경로 없음');
+        else if (selectedMode.value === 'car') throw new Error('자동차 경로 없음');
+      }
+      transitResult.value = features;
+    }
+
     showTmapModal.value = true;
 
     nextTick(() => {
