@@ -30,6 +30,9 @@
 
 <script setup>
 import { ref, watch, onMounted, nextTick, computed } from 'vue';
+import markerStart from '@/assets/markers/start.png';
+import markerEnd from '@/assets/markers/end.png';
+import markerWaypoint from '@/assets/markers/waypoint.png';
 
 const props = defineProps({
   transitResult: Array,
@@ -60,18 +63,75 @@ const summaryText = computed(() => {
   }
 });
 
+const dynamicMarkers = [];
+
 function drawRoute(map) {
+  dynamicMarkers.forEach(marker => marker.setMap(null));
+  dynamicMarkers.length = 0;
+
   if (props.mode === 'transit') {
     props.transitResult.forEach(itinerary => {
-      itinerary.legs.forEach(leg => {
-        if (leg.passShape?.linestring) {
-          const coords = leg.passShape.linestring.split(' ').map(pair => {
+      itinerary.legs.forEach((leg, idx) => {
+        const { start, end, mode, passShape, routeColor, steps } = leg;
+
+        if (start) {
+          const marker = new window.Tmapv2.Marker({
+            position: new window.Tmapv2.LatLng(start.lat, start.lon),
+            icon: idx === 0 ? markerStart : markerWaypoint,
+            iconSize: new window.Tmapv2.Size(30, 45),
+            map,
+          });
+          dynamicMarkers.push(marker);
+        }
+
+        if (end && idx === itinerary.legs.length - 1) {
+          const marker = new window.Tmapv2.Marker({
+            position: new window.Tmapv2.LatLng(end.lat, end.lon),
+            icon: markerEnd,
+            iconSize: new window.Tmapv2.Size(30, 45),
+            map,
+          });
+          dynamicMarkers.push(marker);
+        }
+
+        if (mode === 'WALK') {
+          if (passShape?.linestring) {
+            const coords = passShape.linestring.split(' ').map(pair => {
+              const [lon, lat] = pair.split(',').map(Number);
+              return new window.Tmapv2.LatLng(lat, lon);
+            });
+            new window.Tmapv2.Polyline({
+              path: coords,
+              strokeColor: '#000000',
+              strokeWeight: 4,
+              lineStyle: 'dot',
+              map,
+            });
+          } else if (steps) {
+            steps.forEach(step => {
+              if (step.linestring) {
+                const coords = step.linestring.split(' ').map(pair => {
+                  const [lon, lat] = pair.split(',').map(Number);
+                  return new window.Tmapv2.LatLng(lat, lon);
+                });
+                new window.Tmapv2.Polyline({
+                  path: coords,
+                  strokeColor: '#000000',
+                  strokeWeight: 4,
+                  lineStyle: 'dot',
+                  map,
+                });
+              }
+            });
+          }
+        } else if (passShape?.linestring) {
+          const coords = passShape.linestring.split(' ').map(pair => {
             const [lon, lat] = pair.split(',').map(Number);
             return new window.Tmapv2.LatLng(lat, lon);
           });
           new window.Tmapv2.Polyline({
             path: coords,
-            strokeColor: '#' + (leg.routeColor ?? '3b3b3b'),
+            strokeColor: '#' + (routeColor ?? '3b3b3b'),
             strokeWeight: 6,
             map,
           });
@@ -83,24 +143,20 @@ function drawRoute(map) {
       if (geometry.type === 'Point') {
         const [lon, lat] = geometry.coordinates;
         const iconUrl =
-          properties.pointType === 'S'
-            ? 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_s.png'
-            : properties.pointType === 'E'
-            ? 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_e.png'
-            : 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_b_m_p.png';
-
-        new window.Tmapv2.Marker({
+          properties.pointType === 'S' ? markerStart :
+          properties.pointType === 'E' ? markerEnd :
+          markerWaypoint;
+        const marker = new window.Tmapv2.Marker({
           position: new window.Tmapv2.LatLng(lat, lon),
           icon: iconUrl,
-          iconSize: new window.Tmapv2.Size(24, 38),
+          iconSize: new window.Tmapv2.Size(30, 45),
           map,
         });
+        dynamicMarkers.push(marker);
       }
 
       if (geometry.type === 'LineString') {
-        const path = geometry.coordinates.map(([lon, lat]) =>
-          new window.Tmapv2.LatLng(lat, lon)
-        );
+        const path = geometry.coordinates.map(([lon, lat]) => new window.Tmapv2.LatLng(lat, lon));
         new window.Tmapv2.Polyline({
           path,
           strokeColor: '#ff3b3b',
@@ -125,6 +181,8 @@ const initializeMap = async () => {
     zoom: 14,
   });
 
+  map.addListener("zoom_changed", () => drawRoute(map));
+
   const bounds = new window.Tmapv2.LatLngBounds();
   if (props.mode === 'transit') {
     props.transitResult.forEach(itinerary => {
@@ -133,6 +191,15 @@ const initializeMap = async () => {
           leg.passShape.linestring.split(' ').forEach(pair => {
             const [lon, lat] = pair.split(',').map(Number);
             bounds.extend(new window.Tmapv2.LatLng(lat, lon));
+          });
+        } else if (leg.steps) {
+          leg.steps.forEach(step => {
+            if (step.linestring) {
+              step.linestring.split(' ').forEach(pair => {
+                const [lon, lat] = pair.split(',').map(Number);
+                bounds.extend(new window.Tmapv2.LatLng(lat, lon));
+              });
+            }
           });
         }
       });

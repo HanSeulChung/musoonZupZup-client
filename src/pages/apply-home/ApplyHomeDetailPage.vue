@@ -307,7 +307,7 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // km
 }
-
+import axios from 'axios'
 const requestTransitRoute = async () => {
   if (!selectedPlace.value || !detail.value?.geo) return;
 
@@ -333,19 +333,41 @@ const requestTransitRoute = async () => {
     endY: endLat
   };
 
+  const directBody = {
+    startPlaceAlias: selectedPlace.value.alias,
+    startPlaceAddress: selectedPlace.value.address,
+    startX: startLon,
+    startY: startLat,
+    endPlaceAlias: detail.value.houseName,
+    endPlaceAddress: detail.value.houseAddress,
+    endX: endLon,
+    endY: endLat,
+    count: 1,
+    lang: 0,
+    format: 'json'
+  };
+
   let endpoint = '/route/car';
   if (selectedMode.value === 'pedestrian') {
     endpoint = '/route/pedestrian';
   } else if (selectedMode.value === 'transit') {
-    endpoint = '/route/transit';
+    // endpoint = '/route/transit';
+    endpoint = '';
   }
 
   try {
-    const res = await api.post(endpoint, reqBody);
+    // const res = await api.post(endpoint, reqBody);
+    const res = await axios.post('https://apis.openapi.sk.com/transit/routes', directBody, {
+    headers: {
+      'accept': 'application/json',
+      'Content-Type': 'application/json',
+      'appKey': 'qrd5ZOjQHx2wTJfbCn8aU30sFZW1WtLK65E6B6dI'
+    }
+  });
     console.log("res: ", res);
 
     if (selectedMode.value === 'transit') {
-      const itineraries = res.data.route?.metaData?.plan?.itineraries;
+      const itineraries = res.data.metaData?.plan?.itineraries;
       if (!itineraries || itineraries.length === 0) throw new Error('대중교통 경로 없음');
       transitResult.value = itineraries;
     } else {
