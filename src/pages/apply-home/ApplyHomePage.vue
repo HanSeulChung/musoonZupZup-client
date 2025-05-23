@@ -10,7 +10,7 @@
 
         <div class="card-body">
             <p>📅 공고일: {{ formatDate(item.pblancDate) }}</p>
-            <p>🏠 공급: {{ item.suplyCount }}세대 / {{ item.suplyPrice.toLocaleString() }}원</p>
+            <p>🏠 공급: {{ item.suplyCount }}세대 / {{ formatPriceToKorean(item.suplyPrice) }}</p>
             <p>📆 청약: {{ formatDate(item.applyStartDate) }} ~ {{ formatDate(item.applyEndDate) }}</p>
         </div>
 
@@ -38,6 +38,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from "@/libs/axios";
+import { formatDate, formatPriceToKorean } from '@/utils/format';
 
 const homes = ref({
     content: [],
@@ -67,11 +68,6 @@ const changePage = (page) => {
     if (page < 0 || page >= homes.value.totalPages) return;
     currentPage.value = page;
     fetchHomes();
-};
-
-const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    return new Date(dateStr).toLocaleDateString();
 };
 
 onMounted(fetchHomes);
