@@ -31,23 +31,18 @@ const props = defineProps({
 const allPosts = ref([])
 
 const fetchPosts = async () => {
-    try {
-        // 커뮤니티 유형 분기 처리
-        let url = '/community/list'
-        // if (props.type === 'latest') {
-        //     url = '/applyhome/list/top3/pblanc_date'
-        // } 
-        // else if (props.type === 'popular') {
-        //     url = '/applyhome/list/top3/view' 
-        // }
+  try {
+    const res = await api.get('/community/list', {
+      params: {
+        page: 0,
+        sortKey: 4, // 좋아요 + 조회수 순 정렬
+      }
+    });
 
-        const res = await api.get(url)
-        console.log(res.data);
-        allPosts.value = res.data?.content
-        console.log(allPosts.value);
-    } catch (err) {
-        console.error('커뮤니티 조회 실패:', err)
-    }
+    allPosts.value = res.data?.content || [];
+  } catch (err) {
+    console.error('커뮤니티 조회 실패:', err);
+  }
 }
 
 const formatDate = (dateStr) => {
