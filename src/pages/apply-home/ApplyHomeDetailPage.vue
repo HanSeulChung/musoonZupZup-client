@@ -49,10 +49,9 @@
             GPT 분석 더 알아보기
           </button>
         </div>
-
         <p v-if="gptComment === null">GPT 분석 중입니다...</p>
         <p v-else-if="!gptComment">분석 결과가 존재하지 않습니다.</p>
-        <p v-else class="gpt-text">{{ gptComment }}</p>
+        <p v-else class="gpt-text" v-html="gptCommentHtml"></p>
       </div>
     </div>
   </section>
@@ -104,8 +103,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted, nextTick, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import api from '@/libs/axios';
 import { loadKakaoMap } from '@/libs/kakaoLoader';
 import { useAuthStore } from '@/stores/auth';
@@ -122,6 +123,11 @@ const route = useRoute();
 const router = useRouter();
 const detail = ref(null);
 const gptComment = ref(null);
+
+// HTML sanitizing 도구 사용
+const gptCommentHtml = computed(() =>
+  DOMPurify.sanitize(marked(gptComment.value ?? ''))
+);
 const mapContainer = ref(null);
 
 const showModal = ref(false);
@@ -351,19 +357,12 @@ const requestTransitRoute = async () => {
   if (selectedMode.value === 'pedestrian') {
     endpoint = '/route/pedestrian';
   } else if (selectedMode.value === 'transit') {
-    // endpoint = '/route/transit';
-    endpoint = '';
+    endpoint = '/route/transit';
   }
 
   try {
-    // const res = await api.post(endpoint, reqBody);
-    const res = await axios.post('https://apis.openapi.sk.com/transit/routes', directBody, {
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json',
-      'appKey': 'qrd5ZOjQHx2wTJfbCn8aU30sFZW1WtLK65E6B6dI'
-    }
-  });
+    const res = await api.post(endpoint, reqBody);
+
     console.log("res: ", res);
 
     if (selectedMode.value === 'transit') {
@@ -515,53 +514,6 @@ onMounted(async () => {
 
       .address {
         color: var(--color-on-surface-variant);
-      }
-    }
-
-    .gpt-comment {
-      background-color: var(--color-surface-variant);
-      padding: 1rem;
-      border-radius: 8px;
-
-      .gpt-comment-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        h3 {
-          margin: 0;
-          font-weight: bold;
-          font-size: 1.1rem;
-          color: var(--color-on-surface);
-        }
-
-        .gpt-more-btn {
-          padding: 0.5rem 1rem;
-          border: none;
-          border-radius: 6px;
-          background-color: var(--color-primary);
-          color: white;
-          font-weight: 600;
-          cursor: pointer;
-          font-size: 0.9rem;
-          transition: all 0.2s;
-
-          &:hover {
-            background-color: var(--color-primary-container);
-            transform: scale(1.05);
-          }
-
-          &:active {
-            transform: scale(0.97);
-          }
-        }
-      }
-
-      .gpt-text {
-        white-space: pre-line;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        margin-top: 0.75rem;
       }
     }
   }
@@ -807,6 +759,87 @@ onMounted(async () => {
     border-radius: 12px;
     border: 1px solid #ddd;
     overflow: hidden;
+  }
+}
+
+.gpt-more-btn {
+    margin-left: auto;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: var(--color-primary-container);
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  .gpt-comment {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: var(--color-surface-variant);
+  min-height: 300px;
+  width: 100%;
+  overflow-wrap: break-word;
+
+  .gpt-comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .gpt-text {
+    flex: 1;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+
+    // 💡 리스트 관련
+    ol,
+    ul {
+      list-style-position: inside;     // ✅ 마커를 안쪽으로
+      padding-left: 1.2rem;            // ✅ 마커 및 텍스트 정렬 맞춤
+      margin: 0.5rem 0;
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+      line-height: 1.5;
+    }
+
+    p {
+      margin: 0.6rem 0;
+    }
+
+    strong {
+      font-weight: bold;
+    }
+
+    em {
+      font-style: italic;
+    }
+  }
+
+  // 필요 시 p 상태 텍스트 스타일
+  p {
+    font-size: 0.95rem;
+    color: #444;
   }
 }
 </style>
