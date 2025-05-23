@@ -34,6 +34,8 @@
         <p>당첨 발표일: {{ formatDate(detail?.applyAnnounceDate) }}</p>
         <p>청약기간: {{ formatDate(detail?.applyStartDate) }} ~ {{ formatDate(detail?.applyEndDate) }}</p>
         <p>분양 사무실 번호: {{ detail?.businessTel }}</p>
+
+        <button @click="openTransitModal" class="transit-btn">내 장소와 거리 비교하기</button>
       </div>
 
       <div class="gpt-comment">
@@ -131,6 +133,29 @@
             </div>
         </div>
     </div>
+
+    <!-- 장소 선택 모달 -->
+    <div v-if="showTransitModal" class="modal-backdrop">
+      <div class="modal-content">
+        <h3>출발지 선택</h3>
+        <select v-model="selectedPlace">
+          <option disabled value="">출발지를 선택하세요</option>
+          <option v-for="place in userPlaces" :key="place.idx" :value="place">
+            {{ place.alias }} ({{ place.address }})
+          </option>
+        </select>
+        <div class="modal-buttons" style="margin-top: 1rem;">
+          <button @click="requestTransitRoute" :disabled="!selectedPlace">경로 보기</button>
+          <button @click="showTransitModal = false">취소</button>
+        </div>
+      </div>
+    </div>
+    <!-- 경로 안내 모달 -->
+    <div v-if="showTmapModal" class="modal-backdrop">
+      <div class="modal-content tmap-modal">
+        <TmapViewer :transitResult="transitResult" @close="showTmapModal = false" />
+      </div>
+    </div>
   </Teleport>
 </template>
 
@@ -140,6 +165,7 @@ import { useRoute, useRouter } from 'vue-router';
 import api from '@/libs/axios';
 import { loadKakaoMap } from '@/libs/kakaoLoader';
 import { useAuthStore } from '@/stores/auth';
+import { formatDate, formatPriceToKorean } from '@/utils/format';
 
 const authStore = useAuthStore();
 const liked = ref(false);
@@ -297,22 +323,6 @@ const fetchDetailGpt = async () => {
   });
   gptComment.value = res.data.comment;
 };
-
-const formatDate = (str) => new Date(str).toLocaleDateString();
-const formatPriceToKorean = (price) => {
-  if (!price && price !== 0) return '-';
-  const amount = price * 10000;
-
-  const 억 = Math.floor(amount / 100000000); // 1억 = 100,000,000
-  const 만 = Math.floor((amount % 100000000) / 10000); // 나머지 만 단위
-
-  let result = '';
-  if (억 > 0) result += `${억}억`;
-  if (만 > 0) result += ` ${만}만원`;
-
-  return result.trim();
-};
-
 const loadMap = async () => {
   if (!detail.value?.geo) return;
   const kakaoKey = import.meta.env.VITE_KAKAO_MAP_API_KEY;
@@ -325,6 +335,62 @@ const loadMap = async () => {
   };
   const map = new window.kakao.maps.Map(container, options);
   new window.kakao.maps.Marker({ map, position: new window.kakao.maps.LatLng(y, x) });
+};
+
+const userPlaces = ref([]);
+const showTransitModal = ref(false);
+
+const fetchUserPlaces = async () => {
+  try {
+    const res = await api.get('/members/registPlace');
+    userPlaces.value = res.data || [];
+    console.log("userPlaces: ", userPlaces.value)
+  } catch (err) {
+    console.error('장소 불러오기 실패:', err);
+  }
+};
+const selectedPlace = ref(null);
+
+import TmapViewer from "@/components/apply-home/TmapViewer.vue";
+const transitResult = ref([]); // POST 결과
+const showTmapModal = ref(false);
+
+const requestTransitRoute = async () => {
+  if (!selectedPlace.value || !detail.value?.geo) return;
+
+  const reqBody = {
+    startPlaceAlias: selectedPlace.value.alias,
+    startPlaceAddress: selectedPlace.value.address,
+    startX: selectedPlace.value.x,
+    startY: selectedPlace.value.y,
+    endPlaceAlias: detail.value.houseName,
+    endPlaceAddress: detail.value.houseAddress,
+    endX: detail.value.geo.x,
+    endY: detail.value.geo.y
+  };
+
+  console.log("자동차 경로 요청 reqBody: ", reqBody)
+  try {
+    const res = await api.post('/route/car', reqBody);
+    transitResult.value = res.data.route.features;
+    showTmapModal.value = true;
+    console.log("res.data: ", res.data);
+
+    nextTick(() => {
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize')); // 지도 리사이즈 유도
+      }, 100);
+    });
+    console.log(transitResult.value);
+  } catch (err) {
+    alert("자동차 경로 요청 실패");
+    console.error(err);
+  }
+};
+
+const openTransitModal = async () => {
+  await fetchUserPlaces(); // 내 장소 목록 불러오기
+  showTransitModal.value = true;
 };
 
 watch(
@@ -681,4 +747,61 @@ onMounted(async () => {
   }
 }
 
+.transit-btn {
+  margin-top: 1.5rem;
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: var(--color-primary-container);
+  }
+}
+
+.modal-content.tmap-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 1200px;
+  width: 95%;
+  height: auto;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+
+  .close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: transparent;
+    border: none;
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #555;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+
+    &:hover {
+      transform: scale(1.2);
+      color: #d62828;
+    }
+  }
+
+  .tmap-box {
+    width: 100%;
+    height: 600px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    overflow: hidden;
+  }
+}
 </style>
