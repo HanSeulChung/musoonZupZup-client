@@ -1,62 +1,83 @@
+<!-- src/components/apply-home/modals/TmapModal.vue -->
 <template>
   <div class="modal-backdrop">
     <div class="modal-content tmap-modal">
       <button class="close-btn" @click="$emit('close')">×</button>
+
       <div v-if="summaryText" class="summary-text">{{ summaryText }}</div>
+
+      <!-- ✅ 출발지 & 이동수단 선택 -->
+      <div class="resubmit-bar">
+        <label>출발지</label>
+        <select v-model="selectedPlaceLocal">
+          <option v-for="place in places" :key="place.idx" :value="place">
+            {{ place.alias }} ({{ place.address }})
+          </option>
+        </select>
+
+        <label>이동수단</label>
+        <select v-model="selectedModeLocal">
+          <option value="car">자동차</option>
+          <option value="pedestrian">도보</option>
+        </select>
+
+        <button @click="emitResubmit">경로 다시 보기</button>
+      </div>
+
       <div class="tmap-box" id="tmap-container"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, watch, nextTick, computed } from 'vue';
+import { ref, watch, onMounted, nextTick, computed } from 'vue';
 
 const props = defineProps({
-  transitResult: Array
+  transitResult: Array,
+  places: Array,
+  selectedPlace: Object,
+  mode: String,
 });
+const emit = defineEmits(['close', 'resubmit']);
 
+const selectedPlaceLocal = ref(props.selectedPlace);
+const selectedModeLocal = ref(props.mode);
+
+// ✅ 요약 텍스트 계산
 const summaryText = computed(() => {
   const first = props.transitResult?.[0];
   if (!first?.properties) return '';
-
-  const distance = (first.properties.totalDistance / 1000).toFixed(1);
+  const dist = (first.properties.totalDistance / 1000).toFixed(1);
   const time = Math.round(first.properties.totalTime / 60);
   const fare = first.properties.totalFare?.toLocaleString() ?? '0';
   const taxiFare = first.properties.taxiFare?.toLocaleString() ?? '0';
-
-  return `총 거리: ${distance}km · 총 시간: ${time}분 · 통행료: ${fare}원 · 예상 택시 요금: ${taxiFare}원`;
+  return `총 거리: ${dist}km · 총 시간: ${time}분 · 통행료: ${fare}원 · 예상 택시 요금: ${taxiFare}원`;
 });
 
+// ✅ 지도에 경로 그리기
 function drawRoute(map) {
-  props.transitResult.forEach((feature) => {
-    const { geometry, properties } = feature;
-
-    // 📍 마커
+  props.transitResult.forEach(({ geometry, properties }) => {
     if (geometry.type === 'Point') {
       const [lon, lat] = geometry.coordinates;
-      const position = new window.Tmapv2.LatLng(lat, lon);
-
-      let iconUrl = 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_b_m_p.png';
-      if (properties.pointType === 'S') {
-        iconUrl = 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_s.png';
-      } else if (properties.pointType === 'E') {
-        iconUrl = 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_e.png';
-      }
+      const iconUrl =
+        properties.pointType === 'S'
+          ? 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_s.png'
+          : properties.pointType === 'E'
+          ? 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_e.png'
+          : 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_b_m_p.png';
 
       new window.Tmapv2.Marker({
-        position,
+        position: new window.Tmapv2.LatLng(lat, lon),
         icon: iconUrl,
         iconSize: new window.Tmapv2.Size(24, 38),
         map,
       });
     }
 
-    // 📍 경로 라인
     if (geometry.type === 'LineString') {
       const path = geometry.coordinates.map(([lon, lat]) =>
         new window.Tmapv2.LatLng(lat, lon)
       );
-
       new window.Tmapv2.Polyline({
         path,
         strokeColor: '#ff3b3b',
@@ -67,6 +88,7 @@ function drawRoute(map) {
   });
 }
 
+// ✅ 지도 초기화
 const initializeMap = async () => {
   await nextTick();
   const container = document.getElementById('tmap-container');
@@ -74,23 +96,18 @@ const initializeMap = async () => {
 
   container.innerHTML = '';
   const map = new window.Tmapv2.Map(container, {
-    center: new window.Tmapv2.LatLng(37.5665, 126.9780), // fallback
+    center: new window.Tmapv2.LatLng(37.5665, 126.9780),
     width: '100%',
     height: '600px',
     zoom: 14,
   });
 
-  // ✅ bounds 계산
   const bounds = new window.Tmapv2.LatLngBounds();
-
-  props.transitResult.forEach((feature) => {
-    const { geometry } = feature;
-
+  props.transitResult.forEach(({ geometry }) => {
     if (geometry.type === 'Point') {
       const [lon, lat] = geometry.coordinates;
       bounds.extend(new window.Tmapv2.LatLng(lat, lon));
     }
-
     if (geometry.type === 'LineString') {
       geometry.coordinates.forEach(([lon, lat]) => {
         bounds.extend(new window.Tmapv2.LatLng(lat, lon));
@@ -98,21 +115,24 @@ const initializeMap = async () => {
     }
   });
 
-  map.fitBounds(bounds); // ✅ 중심 및 줌 자동 설정
+  map.fitBounds(bounds);
   drawRoute(map);
+};
+
+// ✅ 다시 요청 이벤트
+const emitResubmit = () => {
+  if (selectedPlaceLocal.value && selectedModeLocal.value) {
+    emit('resubmit', {
+      place: selectedPlaceLocal.value,
+      mode: selectedModeLocal.value,
+    });
+  }
 };
 
 onMounted(() => {
   initializeMap();
 });
-
-watch(
-  () => props.transitResult,
-  () => {
-    initializeMap();
-  },
-  { immediate: true }
-);
+watch(() => props.transitResult, initializeMap, { immediate: true });
 </script>
 
 <style scoped lang="scss">
@@ -135,25 +155,21 @@ watch(
   border-radius: 16px;
   max-width: 1200px;
   width: 95%;
-  height: auto;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
   gap: 1rem;
 
   .close-btn {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    background-color: transparent;
-    border: none;
     font-size: 1.75rem;
-    font-weight: bold;
-    color: #555;
+    background: none;
+    border: none;
     cursor: pointer;
-    transition: transform 0.2s, color 0.2s;
+    color: #555;
 
     &:hover {
       transform: scale(1.2);
@@ -163,7 +179,6 @@ watch(
 
   .summary-text {
     font-size: 1rem;
-    font-weight: 500;
     background-color: #f7f7f7;
     padding: 0.75rem 1rem;
     border-radius: 8px;
@@ -171,11 +186,46 @@ watch(
     color: #333;
   }
 
+  .resubmit-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 8px;
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    select {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: var(--color-primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--color-primary-container);
+      }
+    }
+  }
+
   .tmap-box {
     width: 100%;
     height: 600px;
-    border-radius: 12px;
     border: 1px solid #ddd;
+    border-radius: 12px;
     overflow: hidden;
   }
 }

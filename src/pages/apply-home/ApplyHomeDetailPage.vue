@@ -94,6 +94,10 @@
     <TmapModal
       v-if="showTmapModal"
       :transitResult="transitResult"
+      :places="userPlaces"
+      :selectedPlace="selectedPlace"
+      :mode="selectedMode"
+      @resubmit="handleResubmitRoute"
       @close="showTmapModal = false"
     />
   </Teleport>
@@ -212,6 +216,12 @@ const handleTransitSubmit = ({ place, mode }) => {
   selectedMode.value = mode;
   requestTransitRoute(); // 이 안에서 mode에 따라 API 분기 처리
   showTransitModal.value = false;
+};
+
+const handleResubmitRoute = async ({ place, mode }) => {
+  selectedPlace.value = place;
+  selectedMode.value = mode;
+  await requestTransitRoute();
 };
 
 const fetchLikeStatus = async () => {
