@@ -43,7 +43,7 @@
           <h3>GPT 분석 요약</h3>
           <button
             class="gpt-more-btn"
-            v-if="authStore.isLoggedIn && (authStore.role === 'USER' || authStore.role === 'MEMBERSHIP') && gptComment"
+            v-if="authStore.isLoggedIn && ['USER', 'MEMBERSHIP'].includes(authStore.role) && gptComment !== null"
             @click="handleGptMoreClick"
           >
             GPT 분석 더 알아보기
@@ -66,24 +66,12 @@
     />
 
     <!-- 결제 모달 -->
-    <div v-if="showPaymentModal" class="modal-backdrop">
-      <div class="modal-content">
-        <h3>멤버십 결제</h3>
-        <p>GPT 상세 분석을 보려면 멤버십 가입이 필요합니다.</p>
-        <form @submit.prevent="submitPayment">
-          <label>
-            카드 번호:
-            <input v-model="cardNumber" placeholder="1234-5678-9012-3456" required />
-          </label>
-          <label>
-            이름:
-            <input v-model="name" required />
-          </label>
-          <button type="submit">결제하기 (₩9,900)</button>
-          <button type="button" @click="closePaymentModal">닫기</button>
-        </form>
-      </div>
-    </div>
+    <MembershipPaymentModal
+      v-if="showPaymentModal"
+      @submit="submitPayment"
+      @close="closePaymentModal"
+    />
+
 
     <!-- GPT 질문 모달 -->
     <div
@@ -163,6 +151,7 @@ import { loadKakaoMap } from '@/libs/kakaoLoader';
 import { useAuthStore } from '@/stores/auth';
 import { formatDate, formatPriceToKorean } from '@/utils/format';
 import MembershipConfirmModal from '@/components/apply-home/modals/MembershipConfirmModal.vue';
+import MembershipPaymentModal from '@/components/apply-home/modals/MembershipPaymentModal.vue';
 
 const authStore = useAuthStore();
 const liked = ref(false);
@@ -263,9 +252,17 @@ const closePaymentModal = () => {
   showPaymentModal.value = false;
 };
 
-const submitPayment = () => {
-  alert(`"${name.value}"님 결제 완료되었습니다!`);
-  closePaymentModal();
+const submitPayment = async ({ cardNumber, name }) => {
+  try {
+    await api.patch('/members/upgrade');
+    alert('멤버십 결제가 완료되었습니다!');
+    showPaymentModal.value = false;
+
+    await authStore.fetchProfile(); // 실패해도 로그인 유지
+  } catch (err) {
+    console.error('멤버십 업데이트 실패:', err);
+    alert('결제에 실패했습니다. 다시 시도해주세요.');
+  }
 };
 
 const handleGptMoreClick = () => {

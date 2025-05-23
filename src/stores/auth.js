@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import api from '@/libs/axios'; 
 
 export const useAuthStore = defineStore('auth', () => {
     const isLoggedIn = ref(false)
@@ -21,13 +22,25 @@ export const useAuthStore = defineStore('auth', () => {
         memberId.value = null
     }
 
+    const fetchProfile = async () => {
+    try {
+      const res = await api.get('/members/mypage');
+      role.value = res.data.role || 'USER';
+      isLoggedIn.value = true;
+    } catch (err) {
+      console.error('프로필 불러오기 실패:', err);
+      // 로그인 상태는 유지
+    }
+  };
+
     return {
         isLoggedIn,
         accessToken,
         role,
         memberId,
         login,
-        logout
+        logout,
+        fetchProfile
     }
     }, {
     persist: {
