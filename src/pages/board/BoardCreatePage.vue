@@ -39,11 +39,11 @@ onMounted(() => {
     return;
   }
 
-  // 자유 게시판은 일반 사용자만, 공지사항은 관리자만 가능
+  // 자유 게시판은 사용자(일반 사용자, 멤버십 사용자)만, 공지사항은 관리자만 가능
   if (
     (boardType === "notice" &&
       !(role.value === "ADMIN" || role.value === "MASTER")) ||
-    (boardType === "community" && role.value !== "USER")
+    (boardType === "community" && !(role.value !== "USER" || role.value === "MASTER"))
   ) {
     alert("작성 권한이 없습니다.");
     router.push("/");

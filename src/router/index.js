@@ -74,7 +74,8 @@ const routes = [
     path: '/communities/create',
     name: 'CommunityCreate',
     component: BoardCreate,
-    props: { boardType: 'community' }
+    props: { boardType: 'community' },
+    meta: { requiresAuth: true, roles: ['MEMBERSHIP', 'USER'] }
   },
   {
     path: '/communities/edit/:id',
