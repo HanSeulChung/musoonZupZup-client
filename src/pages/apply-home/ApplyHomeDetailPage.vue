@@ -33,7 +33,7 @@
         <p>공고 번호: {{ detail?.pblancNo }}</p>
         <p>당첨 발표일: {{ formatDate(detail?.applyAnnounceDate) }}</p>
         <p>청약기간: {{ formatDate(detail?.applyStartDate) }} ~ {{ formatDate(detail?.applyEndDate) }}</p>
-        <p>분양 사무실 번호: {{ detail?.businessTel }}</p>
+        <p>문의: {{ detail?.businessTel }}</p>
 
         <button @click="openTransitModal" class="transit-btn">내 장소와 거리 비교하기</button>
       </div>
