@@ -1,4 +1,3 @@
-<!-- src/components/apply-home/modals/TmapModal.vue -->
 <template>
   <div class="modal-backdrop">
     <div class="modal-content tmap-modal">
@@ -6,7 +5,6 @@
 
       <div v-if="summaryText" class="summary-text">{{ summaryText }}</div>
 
-      <!-- ✅ 출발지 & 이동수단 선택 -->
       <div class="resubmit-bar">
         <label>출발지</label>
         <select v-model="selectedPlaceLocal">
@@ -19,6 +17,7 @@
         <select v-model="selectedModeLocal">
           <option value="car">자동차</option>
           <option value="pedestrian">도보</option>
+          <option value="transit">대중교통</option>
         </select>
 
         <button @click="emitResubmit">경로 다시 보기</button>
@@ -43,52 +42,76 @@ const emit = defineEmits(['close', 'resubmit']);
 const selectedPlaceLocal = ref(props.selectedPlace);
 const selectedModeLocal = ref(props.mode);
 
-// ✅ 요약 텍스트 계산
 const summaryText = computed(() => {
   const first = props.transitResult?.[0];
-  if (!first?.properties) return '';
-  const dist = (first.properties.totalDistance / 1000).toFixed(1);
-  const time = Math.round(first.properties.totalTime / 60);
-  const fare = first.properties.totalFare?.toLocaleString() ?? '0';
-  const taxiFare = first.properties.taxiFare?.toLocaleString() ?? '0';
-  return `총 거리: ${dist}km · 총 시간: ${time}분 · 통행료: ${fare}원 · 예상 택시 요금: ${taxiFare}원`;
+  if (!first) return '';
+
+  if (props.mode === 'transit') {
+    const dist = (first.totalDistance / 1000).toFixed(1);
+    const time = Math.round(first.totalTime / 60);
+    const fare = first.fare?.regular?.totalFare?.toLocaleString() ?? '0';
+    return `총 거리: ${dist}km · 총 시간: ${time}분 · 요금: ${fare}원`;
+  } else {
+    const dist = (first.properties.totalDistance / 1000).toFixed(1);
+    const time = Math.round(first.properties.totalTime / 60);
+    const fare = first.properties.totalFare?.toLocaleString() ?? '0';
+    const taxiFare = first.properties.taxiFare?.toLocaleString() ?? '0';
+    return `총 거리: ${dist}km · 총 시간: ${time}분 · 통행료: ${fare}원 · 예상 택시 요금: ${taxiFare}원`;
+  }
 });
 
-// ✅ 지도에 경로 그리기
 function drawRoute(map) {
-  props.transitResult.forEach(({ geometry, properties }) => {
-    if (geometry.type === 'Point') {
-      const [lon, lat] = geometry.coordinates;
-      const iconUrl =
-        properties.pointType === 'S'
-          ? 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_s.png'
-          : properties.pointType === 'E'
-          ? 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_e.png'
-          : 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_b_m_p.png';
-
-      new window.Tmapv2.Marker({
-        position: new window.Tmapv2.LatLng(lat, lon),
-        icon: iconUrl,
-        iconSize: new window.Tmapv2.Size(24, 38),
-        map,
+  if (props.mode === 'transit') {
+    props.transitResult.forEach(itinerary => {
+      itinerary.legs.forEach(leg => {
+        if (leg.passShape?.linestring) {
+          const coords = leg.passShape.linestring.split(' ').map(pair => {
+            const [lon, lat] = pair.split(',').map(Number);
+            return new window.Tmapv2.LatLng(lat, lon);
+          });
+          new window.Tmapv2.Polyline({
+            path: coords,
+            strokeColor: '#' + (leg.routeColor ?? '3b3b3b'),
+            strokeWeight: 6,
+            map,
+          });
+        }
       });
-    }
+    });
+  } else {
+    props.transitResult.forEach(({ geometry, properties }) => {
+      if (geometry.type === 'Point') {
+        const [lon, lat] = geometry.coordinates;
+        const iconUrl =
+          properties.pointType === 'S'
+            ? 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_s.png'
+            : properties.pointType === 'E'
+            ? 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_r_m_e.png'
+            : 'https://tmapapi.sktelecom.com/upload/tmap/marker/pin_b_m_p.png';
 
-    if (geometry.type === 'LineString') {
-      const path = geometry.coordinates.map(([lon, lat]) =>
-        new window.Tmapv2.LatLng(lat, lon)
-      );
-      new window.Tmapv2.Polyline({
-        path,
-        strokeColor: '#ff3b3b',
-        strokeWeight: 6,
-        map,
-      });
-    }
-  });
+        new window.Tmapv2.Marker({
+          position: new window.Tmapv2.LatLng(lat, lon),
+          icon: iconUrl,
+          iconSize: new window.Tmapv2.Size(24, 38),
+          map,
+        });
+      }
+
+      if (geometry.type === 'LineString') {
+        const path = geometry.coordinates.map(([lon, lat]) =>
+          new window.Tmapv2.LatLng(lat, lon)
+        );
+        new window.Tmapv2.Polyline({
+          path,
+          strokeColor: '#ff3b3b',
+          strokeWeight: 6,
+          map,
+        });
+      }
+    });
+  }
 }
 
-// ✅ 지도 초기화
 const initializeMap = async () => {
   await nextTick();
   const container = document.getElementById('tmap-container');
@@ -103,23 +126,35 @@ const initializeMap = async () => {
   });
 
   const bounds = new window.Tmapv2.LatLngBounds();
-  props.transitResult.forEach(({ geometry }) => {
-    if (geometry.type === 'Point') {
-      const [lon, lat] = geometry.coordinates;
-      bounds.extend(new window.Tmapv2.LatLng(lat, lon));
-    }
-    if (geometry.type === 'LineString') {
-      geometry.coordinates.forEach(([lon, lat]) => {
-        bounds.extend(new window.Tmapv2.LatLng(lat, lon));
+  if (props.mode === 'transit') {
+    props.transitResult.forEach(itinerary => {
+      itinerary.legs.forEach(leg => {
+        if (leg.passShape?.linestring) {
+          leg.passShape.linestring.split(' ').forEach(pair => {
+            const [lon, lat] = pair.split(',').map(Number);
+            bounds.extend(new window.Tmapv2.LatLng(lat, lon));
+          });
+        }
       });
-    }
-  });
+    });
+  } else {
+    props.transitResult.forEach(({ geometry }) => {
+      if (geometry.type === 'Point') {
+        const [lon, lat] = geometry.coordinates;
+        bounds.extend(new window.Tmapv2.LatLng(lat, lon));
+      }
+      if (geometry.type === 'LineString') {
+        geometry.coordinates.forEach(([lon, lat]) => {
+          bounds.extend(new window.Tmapv2.LatLng(lat, lon));
+        });
+      }
+    });
+  }
 
   map.fitBounds(bounds);
   drawRoute(map);
 };
 
-// ✅ 다시 요청 이벤트
 const emitResubmit = () => {
   if (selectedPlaceLocal.value && selectedModeLocal.value) {
     emit('resubmit', {

@@ -13,15 +13,10 @@
 
       <!-- 이동 수단 선택 -->
       <div class="mode-select">
-        <label>
-          <input type="radio" value="car" v-model="selectedMode" />
-          자동차
-        </label>
-        <label>
-          <input type="radio" value="pedestrian" v-model="selectedMode" />
-          도보
-        </label>
-      </div>
+        <label><input type="radio" value="car" v-model="selectedMode" /> 자동차</label>
+        <label><input type="radio" value="pedestrian" v-model="selectedMode" /> 도보</label>
+        <label><input type="radio" value="transit" v-model="selectedMode" /> 대중교통</label>
+    </div>
 
       <!-- 버튼 -->
       <div class="modal-buttons">

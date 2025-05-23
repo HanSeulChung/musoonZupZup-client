@@ -333,13 +333,30 @@ const requestTransitRoute = async () => {
     endY: endLat
   };
 
-  const endpoint = selectedMode.value === 'car' ? '/route/car' : '/route/pedestrian';
+  let endpoint = '/route/car';
+  if (selectedMode.value === 'pedestrian') {
+    endpoint = '/route/pedestrian';
+  } else if (selectedMode.value === 'transit') {
+    endpoint = '/route/transit';
+  }
 
   try {
     const res = await api.post(endpoint, reqBody);
-    if (!res.data?.route?.features?.length) throw new Error('경로 없음');
+    console.log("res: ", res);
 
-    transitResult.value = res.data.route.features;
+    if (selectedMode.value === 'transit') {
+      const itineraries = res.data.route?.metaData?.plan?.itineraries;
+      if (!itineraries || itineraries.length === 0) throw new Error('대중교통 경로 없음');
+      transitResult.value = itineraries;
+    } else {
+      const features = res.data.route?.features;
+      if (!features || features.length === 0) {
+        if (selectedMode.value === 'pedestrian') throw new Error('도보 경로 없음');
+        else if (selectedMode.value === 'car') throw new Error('자동차 경로 없음');
+      }
+      transitResult.value = features;
+    }
+
     showTmapModal.value = true;
 
     nextTick(() => {
