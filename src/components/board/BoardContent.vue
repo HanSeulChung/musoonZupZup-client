@@ -11,8 +11,9 @@
     <div class="meta-info">
       <span>
         작성자:
+        
         {{
-          (authStore.role === 'ADMIN' || authStore.role === 'MASTER')
+          boardType === 'notice'
             ? '관리자'
             : detail?.memberId || '작성자 없음'
         }}
