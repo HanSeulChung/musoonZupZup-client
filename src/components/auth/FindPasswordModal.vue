@@ -28,12 +28,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, defineEmits } from 'vue'
 import api from '@/libs/axios'
 
 const userId = ref('')
 const name = ref('')
 const email = ref('')
+
+const emit = defineEmits(['close'])
 
 const handleFindPassword = async () => {
   if (!userId.value.trim()) return alert('아이디를 입력해주세요.')
@@ -41,12 +43,14 @@ const handleFindPassword = async () => {
   if (!email.value.trim()) return alert('이메일을 입력해주세요.')
 
   try {
-    await api.post('/members/find-password', {
+    const res = await api.post('/members/find-password', {
       userId: userId.value,
       name: name.value,
       email: email.value
     })
-    alert('해당 이메일로 비밀번호 재설정 링크를 보냈습니다.')
+    if(!res.data.success) throw e;
+    alert('해당 이메일로 비밀번호 재설정 링크를 보냈습니다.');
+    emit('close');
   } catch (err) {
     console.error('비밀번호 찾기 실패:', err)
     alert('비밀번호 찾기 중 오류가 발생했습니다.')
