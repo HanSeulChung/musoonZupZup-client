@@ -1,10 +1,6 @@
 <template>
   <div class="modal-backdrop" @mousedown.self="$emit('close')">
-    <div
-      class="modal-content gpt-modal"
-      ref="gptModal"
-      :style="{ top: modalTop + 'px', left: modalLeft + 'px' }"
-    >
+    <div class="modal-content gpt-modal" ref="gptModal">
       <!-- 드래그 영역 -->
       <div class="modal-header" @mousedown="startDragging">
         <h3>GPT에게 물어보기</h3>
@@ -102,6 +98,15 @@ const stopDragging = () => {
   document.removeEventListener('mouseup', stopDragging)
 }
 
+onMounted(async () => {
+  await nextTick()  
+  if (gptModal.value) {
+    const { offsetWidth, offsetHeight } = gptModal.value
+    modalLeft.value = window.innerWidth  / 2 - offsetWidth  / 2
+    modalTop.value  = window.innerHeight / 2 - offsetHeight / 2
+  }
+})
+
 onUnmounted(() => {
   stopDragging()
 })
@@ -121,11 +126,10 @@ onUnmounted(() => {
 }
 
 .modal-content.gpt-modal {
-  position: absolute;
+  position: relative;
   width: 900px;
   max-height: 90vh;
   background-color: #fff;
-  border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
   padding: 2rem;
   overflow-y: auto;
