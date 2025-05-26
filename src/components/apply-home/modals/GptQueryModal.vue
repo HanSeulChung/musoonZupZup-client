@@ -26,7 +26,12 @@
 
       <div class="gpt-answer" v-if="isAsking || answer">
         <h4>답변 결과</h4>
-        <p v-if="isAsking" class="loading-animation">GPT가 답변을 작성 중입니다...</p>
+         <!-- 로딩 스피너 -->
+        <div v-if="isAsking" class="loading-container">
+          <div class="spinner"></div>
+          <p>GPT가 답변을 작성 중입니다<span class="dots"></span></p>
+        </div>
+         <!-- 실제 답변 -->
         <div v-else class="answer-markdown">
          <MarkdownRenderer :content="answer" />
        </div>
@@ -243,5 +248,38 @@ onUnmounted(() => {
       }
     }
   }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 4px solid var(--color-outline);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.dots::after {
+  content: '';
+  animation: dots 1.5s steps(4,end) infinite;
+}
+
+@keyframes dots {
+  0%,20%   { content: ''; }
+  40%      { content: '.'; }
+  60%      { content: '..'; }
+  80%,100% { content: '...'; }
 }
 </style>
