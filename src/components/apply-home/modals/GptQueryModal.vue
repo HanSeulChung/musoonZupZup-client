@@ -27,7 +27,9 @@
       <div class="gpt-answer" v-if="isAsking || answer">
         <h4>답변 결과</h4>
         <p v-if="isAsking" class="loading-animation">GPT가 답변을 작성 중입니다...</p>
-        <p v-else>{{ answer }}</p>
+        <div v-else class="answer-markdown">
+         <MarkdownRenderer :content="answer" />
+       </div>
       </div>
 
       <div v-if="history.length > 0" class="gpt-history">
@@ -36,7 +38,10 @@
           <li v-for="(item, index) in history" :key="index">
             <strong>Q.</strong> {{ item.request }}  
             <br />
-            <strong>A.</strong> {{ item.comment }}
+            <strong>A.</strong> 
+            <div class="history-markdown">
+              <MarkdownRenderer :content="item.comment" />
+            </div>
           </li>
         </ul>
       </div>
@@ -45,6 +50,7 @@
 </template>
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 
 const props = defineProps({
   isAsking: Boolean,
@@ -65,7 +71,6 @@ let offsetX = 0
 let offsetY = 0
 
 const startDragging = (e) => {
-    console.log(history.value)
 
   isDragging = true
   offsetX = e.clientX - modalLeft.value
@@ -106,7 +111,7 @@ onUnmounted(() => {
 
 .modal-content.gpt-modal {
   position: absolute;
-  width: 640px;
+  width: 900px;
   max-height: 90vh;
   background-color: #fff;
   border-radius: 16px;
@@ -199,8 +204,7 @@ onUnmounted(() => {
     background-color: #f3f8ff;
     border: 1px solid #cfe2ff;
     color: #333;
-    line-height: 1.6;
-    white-space: pre-line;
+    line-height: 1.3;
 
     h4 {
       margin-top: 0;
