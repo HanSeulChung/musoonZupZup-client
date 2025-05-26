@@ -52,11 +52,12 @@
             ><input type="radio" value="여성" v-model="gender" /> 여성</label
           >
         </div>
-        <div class="form-group">
+        <div class="form-group inline-label">
+          <label for="birth-date">생년월일:</label>
           <input
+            id="birth-date"
             type="date"
             v-model="birthDate"
-            placeholder="생년월일"
             required
           />
         </div>
@@ -221,6 +222,30 @@ h2 {
     &:hover {
       background-color: var(--color-secondary-container);
     }
+  }
+}
+.form-group.inline-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  label {
+    white-space: nowrap;
+    font-weight: 500;
+    color: var(--color-on-surface);
+    font-size: 1rem;
+  }
+
+  input[type="date"] {
+    text-align: center;
+
+    flex: 1;
+    font-size: 1rem;
+    padding: 0.5rem;
+    border: 1px solid var(--color-outline);
+    border-radius: 6px;
+    background-color: var(--color-background);
+    color: var(--color-on-background);
   }
 }
 
