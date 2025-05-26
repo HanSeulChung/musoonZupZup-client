@@ -44,7 +44,7 @@ onMounted(() => {
     (boardType === "notice" &&
       !(role.value === "ADMIN" || role.value === "MASTER")) ||
     (boardType === "community" && 
-      !(role.value === "USER" || role.value === "MASTER"))
+      !(role.value === "USER" || role.value === "MEMBERSHIP"))
   ) {
     alert("작성 권한이 없습니다.");
     router.push("/");
