@@ -51,7 +51,7 @@
         </div>
         <p v-if="gptComment === null">GPT 분석 중입니다...</p>
         <p v-else-if="!gptComment">분석 결과가 존재하지 않습니다.</p>
-        <p v-else class="gpt-text" v-html="gptCommentHtml"></p>
+        <MarkdownRenderer :content="gptComment" class="gpt-text" />
       </div>
     </div>
   </section>
@@ -105,8 +105,7 @@
 <script setup>
 import { ref, onMounted, nextTick, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import api from '@/libs/axios';
 import { loadKakaoMap } from '@/libs/kakaoLoader';
 import { useAuthStore } from '@/stores/auth';
@@ -124,10 +123,6 @@ const router = useRouter();
 const detail = ref(null);
 const gptComment = ref(null);
 
-// HTML sanitizing 도구 사용
-const gptCommentHtml = computed(() =>
-  DOMPurify.sanitize(marked(gptComment.value ?? ''))
-);
 const mapContainer = ref(null);
 
 const showModal = ref(false);
@@ -261,14 +256,17 @@ const fetchDetailHome = async () => {
     params: { idx: route.params.id }
   });
   detail.value = res.data.pblanc;
-  console.log(detail.value);
 };
 
 const fetchDetailGpt = async () => {
   const res = await api.get('/applyhome/detail/gpt', {
     params: { idx: route.params.id }
   });
+
+  console.log("res: ", res);
   gptComment.value = res.data.comment;
+  console.log("gptComment: ", gptComment.value)
+  console.log(typeof gptComment.value);
 };
 const loadMap = async () => {
   if (!detail.value?.geo) return;
@@ -337,20 +335,6 @@ const requestTransitRoute = async () => {
     endPlaceAddress: detail.value.houseAddress,
     endX: endLon,
     endY: endLat
-  };
-
-  const directBody = {
-    startPlaceAlias: selectedPlace.value.alias,
-    startPlaceAddress: selectedPlace.value.address,
-    startX: startLon,
-    startY: startLat,
-    endPlaceAlias: detail.value.houseName,
-    endPlaceAddress: detail.value.houseAddress,
-    endX: endLon,
-    endY: endLat,
-    count: 1,
-    lang: 0,
-    format: 'json'
   };
 
   let endpoint = '/route/car';
@@ -810,19 +794,6 @@ onMounted(async () => {
     word-break: break-word;
     overflow-wrap: break-word;
 
-    // 💡 리스트 관련
-    ol,
-    ul {
-      list-style-position: inside;     // ✅ 마커를 안쪽으로
-      padding-left: 1.2rem;            // ✅ 마커 및 텍스트 정렬 맞춤
-      margin: 0.5rem 0;
-    }
-
-    li {
-      margin-bottom: 0.4rem;
-      line-height: 1.5;
-    }
-
     p {
       margin: 0.6rem 0;
     }
@@ -836,10 +807,11 @@ onMounted(async () => {
     }
   }
 
-  // 필요 시 p 상태 텍스트 스타일
   p {
     font-size: 0.95rem;
     color: #444;
   }
 }
+
+
 </style>
