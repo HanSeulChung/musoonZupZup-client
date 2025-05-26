@@ -62,6 +62,11 @@ const logout = async () => {
 @use "@/styles/theme" as *;
 
 .header {
+  position: fixed; // 💡 화면에 고정
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 999; // 💡 다른 요소 위에 뜨도록
   background-color: var(--color-primary);
   color: var(--color-on-primary);
   padding: 1rem 2rem;
