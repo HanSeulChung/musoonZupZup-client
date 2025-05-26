@@ -8,8 +8,14 @@
     <ul v-else class="gpt-list">
       <li v-for="(item, index) in paginatedList" :key="index" class="gpt-item">
         <h3>{{ item.houseName }}</h3>
-        <p><strong>질문:</strong> {{ item.request }}</p>
-        <p><strong>답변:</strong> {{ item.comment }}</p>
+        <p><strong>질문:</strong></p>
+        <div class="history-markdown">
+          <MarkdownRenderer :content="item.request" />
+        </div>
+        <p><strong>답변:</strong></p>
+        <div class="history-markdown">
+          <MarkdownRenderer :content="item.comment" />
+        </div>
       </li>
     </ul>
 
@@ -24,6 +30,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import api from '@/libs/axios'
 
 const gptList = ref([])
@@ -143,5 +150,14 @@ h2 {
     font-weight: 600;
     color: #444;
   }
+}
+
+.history-markdown {
+  margin: 0.5rem 0 1rem 0;
+}
+
+/* 필요하다면 p, li 여백도 조절 */
+.history-markdown p {
+  margin: 0.4em 0;
 }
 </style>
