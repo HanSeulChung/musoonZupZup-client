@@ -10,6 +10,14 @@
         <p><strong>아이디:</strong> {{ user.id }}</p>
         <p><strong>성별:</strong> {{ user.gender }}</p>
         <button @click="goChangePw">비밀번호 변경하기</button>
+
+        <button
+          v-if="role === 'USER'"
+          class="membership-btn"
+          @click="openMembershipConfirm"
+        >
+          멤버십 가입하기
+        </button>
       </div>
 
       <div class="action-box">
@@ -42,6 +50,20 @@
         <!-- 에러 메시지 표시 -->
       </div>
     </div>
+
+    <!-- 멤버십 확인 모달 -->
+    <MembershipConfirmModal
+      v-if="showMembershipConfirm"
+      @confirm="openMembershipPayment"
+      @cancel="showMembershipConfirm = false"
+    />
+
+    <!-- 멤버십 결제 모달 -->
+    <MembershipPaymentModal
+      v-if="showMembershipPayment"
+      @submit="submitMembership"
+      @close="closeMembershipPayment"
+    />
   </section>
 </template>
 
@@ -50,11 +72,18 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/libs/axios";
+import MembershipConfirmModal from "@/components/apply-home/modals/MembershipConfirmModal.vue";
+import MembershipPaymentModal from "@/components/apply-home/modals/MembershipPaymentModal.vue";
 
 const auth = useAuthStore();
 const user = ref({});
 const role = ref("");
 const router = useRouter();
+
+// 모달 제어용
+const showModal = ref(false);           // 기존 비밀번호 변경 모달
+const showMembershipConfirm = ref(false);  // 멤버십 확인 모달
+const showMembershipPayment = ref(false);  // 결제 모달
 
 const allActions = {
   USER: [
@@ -82,7 +111,6 @@ const goTo = (path) => {
   router.push(path);
 };
 
-const showModal = ref(false);
 const currentPassword = ref("");
 const newPassword = ref("");
 const errorMessage = ref(""); // 에러 메시지를 위한 변수
@@ -120,6 +148,37 @@ const changePassword = async () => {
   } catch (error) {
     // 서버에서 전송된 에러 메시지를 가져와 표시하기
     errorMessage.value = error.response?.data?.message || "비밀번호 변경 실패";
+  }
+};
+
+const openMembershipConfirm = () => {
+  showMembershipConfirm.value = true;
+};
+
+const openMembershipPayment = () => {
+  showMembershipConfirm.value = false;
+  showMembershipPayment.value = true;
+};
+
+const closeMembershipPayment = () => {
+  showMembershipPayment.value = false;
+};
+
+const submitMembership = async ({ cardNumber, name }) => {
+  try {
+    await api.patch('/members/upgrade', {}, {
+      headers: { Authorization: `Bearer ${auth.accessToken}` },
+    });
+    alert('멤버십 가입이 완료되었습니다!');
+    showMembershipPayment.value = false;
+
+    // 프로필 다시 가져오고 role, 버튼 목록 갱신
+    await auth.fetchProfile();
+    role.value = auth.role;
+    activityButtons.value = allActions[role.value] || [];
+  } catch (err) {
+    console.error(err);
+    alert('멤버십 가입에 실패했습니다.');
   }
 };
 
