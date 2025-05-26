@@ -31,5 +31,6 @@ import Footer from "./components/common/Footer.vue";
   flex-direction: column; // or row depending on layout
   justify-content: center;
   align-items: center;
+  min-height: calc(100vh - 160px);
 }
 </style>
