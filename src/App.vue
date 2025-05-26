@@ -32,5 +32,6 @@ import Footer from "./components/common/Footer.vue";
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 160px);
+  padding-top: 80px;
 }
 </style>
