@@ -35,7 +35,7 @@
         <p>청약기간: {{ formatDate(detail?.applyStartDate) }} ~ {{ formatDate(detail?.applyEndDate) }}</p>
         <p>문의: {{ detail?.businessTel }}</p>
 
-        <button @click="openTransitModal" class="transit-btn">내 장소와 거리 비교하기</button>
+        <button v-if="authStore.isLoggedIn" @click="openTransitModal" class="transit-btn">내 장소와 거리 비교하기</button>
       </div>
 
       <div class="gpt-comment">
