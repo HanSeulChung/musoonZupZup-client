@@ -216,15 +216,25 @@ const handleGptMoreClick = () => {
 };
 
 const handleTransitSubmit = ({ place, mode }) => {
+   // 제출 전에 백업
+  prevSelectedPlace.value = selectedPlace.value;
+  prevSelectedMode.value = selectedMode.value;
+
   selectedPlace.value = place;
   selectedMode.value = mode;
+
   requestTransitRoute(); // 이 안에서 mode에 따라 API 분기 처리
   showTransitModal.value = false;
 };
 
 const handleResubmitRoute = async ({ place, mode }) => {
+  // 제출 전에 백업
+  prevSelectedPlace.value = selectedPlace.value;
+  prevSelectedMode.value = selectedMode.value;
+
   selectedPlace.value = place;
   selectedMode.value = mode;
+
   await requestTransitRoute();
 };
 
@@ -314,7 +324,11 @@ function getDistanceKm(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // km
 }
-import axios from 'axios'
+
+// 현재 값 기억해두기
+const prevSelectedPlace = ref(null);
+const prevSelectedMode = ref(null);
+
 const requestTransitRoute = async () => {
   if (!selectedPlace.value || !detail.value?.geo) return;
 
@@ -326,6 +340,10 @@ const requestTransitRoute = async () => {
   const distanceKm = getDistanceKm(startLat, startLon, endLat, endLon);
   if (selectedMode.value === 'pedestrian' && distanceKm > 50) {
     alert('출발지와 도착지 간의 직선거리가 50km를 초과하여 도보 길찾기를 제공하지 않습니다.');
+
+    // 이전 유효한 값으로 복원
+    selectedPlace.value = prevSelectedPlace.value;
+    selectedMode.value = prevSelectedMode.value;
     return;
   }
 
@@ -353,9 +371,9 @@ const requestTransitRoute = async () => {
     console.log("res: ", res);
 
     if (selectedMode.value === 'transit') {
-      const itineraries = res.data.metaData?.plan?.itineraries;
+      const itineraries = res.data.route.metaData?.plan?.itineraries;
       if (!itineraries || itineraries.length === 0) throw new Error('대중교통 경로 없음');
-      transitResult.value = itineraries;
+      transitResult.value = [itineraries[0]];
     } else {
       const features = res.data.route?.features;
       if (!features || features.length === 0) {

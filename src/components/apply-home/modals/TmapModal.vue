@@ -32,7 +32,6 @@
 import { ref, watch, onMounted, nextTick, computed } from 'vue';
 import markerStart from '@/assets/markers/start.png';
 import markerEnd from '@/assets/markers/end.png';
-import markerWaypoint from '@/assets/markers/waypoint.png';
 
 const props = defineProps({
   transitResult: Array,
@@ -78,10 +77,10 @@ function drawRoute(map) {
       itinerary.legs.forEach((leg, idx) => {
         const { start, end, mode, passShape, routeColor, steps } = leg;
 
-        if (start) {
+        if (start && idx === 0) {
           const marker = new window.Tmapv2.Marker({
             position: new window.Tmapv2.LatLng(start.lat, start.lon),
-            icon: idx === 0 ? markerStart : markerWaypoint,
+            icon: markerStart,
             iconSize: new window.Tmapv2.Size(60, 60),
             map,
           });
@@ -214,6 +213,17 @@ function drawRoute(map) {
   }
 }
 
+const previousPlace = ref(props.selectedPlace);
+const previousMode = ref(props.mode);
+
+watch(selectedPlaceLocal, (newVal) => {
+  previousPlace.value = newVal;
+});
+
+watch(selectedModeLocal, (newVal) => {
+  previousMode.value = newVal;
+});
+
 const initializeMap = async () => {
   await nextTick();
   const container = document.getElementById('tmap-container');
@@ -268,16 +278,47 @@ const initializeMap = async () => {
   drawRoute(map);
 };
 
+function getDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // 지구 반지름 (km)
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // km
+}
+
+
 const emitResubmit = () => {
-  if (selectedPlaceLocal.value && selectedModeLocal.value) {
-    emit('resubmit', {
-      place: selectedPlaceLocal.value,
-      mode: selectedModeLocal.value,
-    });
+  if (!selectedPlaceLocal.value || !selectedModeLocal.value) return;
+
+  const start = selectedPlaceLocal.value;
+  const end = props.places.find(p => p.idx === props.selectedPlace.idx);
+  if (!end) return;
+
+  const distance = getDistanceKm(start.y, start.x, end.y, end.x);
+
+  if (selectedModeLocal.value === 'pedestrian' && distance > 50) {
+    alert('출발지와 도착지 간의 직선거리가 50km를 초과하여 도보 길찾기를 제공하지 않습니다.');
+
+    // 복원
+    selectedModeLocal.value = previousMode.value;
+    selectedPlaceLocal.value = previousPlace.value;
+    return;
   }
+
+  emit('resubmit', {
+    place: selectedPlaceLocal.value,
+    mode: selectedModeLocal.value,
+  });
 };
 
 onMounted(() => {
+  previousPlace.value = props.selectedPlace;
+  previousMode.value = props.mode;
   initializeMap();
 });
 watch(() => props.transitResult, initializeMap, { immediate: true });
