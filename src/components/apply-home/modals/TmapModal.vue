@@ -82,7 +82,7 @@ function drawRoute(map) {
           const marker = new window.Tmapv2.Marker({
             position: new window.Tmapv2.LatLng(start.lat, start.lon),
             icon: idx === 0 ? markerStart : markerWaypoint,
-            iconSize: new window.Tmapv2.Size(30, 45),
+            iconSize: new window.Tmapv2.Size(60, 60),
             map,
           });
           dynamicMarkers.push(marker);
@@ -92,7 +92,7 @@ function drawRoute(map) {
           const marker = new window.Tmapv2.Marker({
             position: new window.Tmapv2.LatLng(end.lat, end.lon),
             icon: markerEnd,
-            iconSize: new window.Tmapv2.Size(30, 45),
+            iconSize: new window.Tmapv2.Size(60, 60),
             map,
           });
           dynamicMarkers.push(marker);
@@ -144,21 +144,19 @@ function drawRoute(map) {
     });
   } else if (props.mode === 'pedestrian') {
     props.transitResult.forEach((feature, idx, arr) => {
-      const { geometry } = feature;
+    const { geometry } = feature;
 
-      if (geometry.type === 'Point') {
+      if (geometry.type === 'Point'
+        && (idx === 0 || idx === arr.length - 1)
+      ) {
         const [lon, lat] = geometry.coordinates;
-        // 첫 번째 → 시작, 마지막 → 도착, 그 외 → 경유지
-        const iconUrl = idx === 0
-          ? markerStart
-          : idx === arr.length - 1
-            ? markerEnd
-            : markerWaypoint;
+        // 첫 번째 → 시작, 마지막 → 도착 / 경유지 제외
+        const iconUrl = idx === 0 ? markerStart : markerEnd;
 
         const marker = new window.Tmapv2.Marker({
           position: new window.Tmapv2.LatLng(lat, lon),
           icon: iconUrl,
-          iconSize: new window.Tmapv2.Size(30, 45),
+          iconSize: new window.Tmapv2.Size(60, 60),
           map,
         });
         dynamicMarkers.push(marker);
@@ -178,32 +176,41 @@ function drawRoute(map) {
       }
     });
   } else {
-    props.transitResult.forEach(({ geometry, properties }) => {
-      if (geometry.type === 'Point') {
-        const [lon, lat] = geometry.coordinates;
-        const iconUrl =
-          properties.pointType === 'S' ? markerStart :
-          properties.pointType === 'E' ? markerEnd :
-          markerWaypoint;
-        const marker = new window.Tmapv2.Marker({
-          position: new window.Tmapv2.LatLng(lat, lon),
-          icon: iconUrl,
-          iconSize: new window.Tmapv2.Size(30, 45),
-          map,
-        });
-        dynamicMarkers.push(marker);
-      }
+      props.transitResult.forEach(
+      ({ geometry, properties }, idx, arr) => {
+        // 시작(idx=0) or 도착(idx=arr.length-1) 만 찍기
+        if (
+          geometry.type === 'Point' &&
+          (idx === 0 || idx === arr.length - 1)
+        ) {
+          const [lon, lat] = geometry.coordinates;
+          // S는 start, E는 end
+          const iconUrl =
+            properties.pointType === 'S' ? markerStart : markerEnd;
 
-      if (geometry.type === 'LineString') {
-        const path = geometry.coordinates.map(([lon, lat]) => new window.Tmapv2.LatLng(lat, lon));
-        new window.Tmapv2.Polyline({
-          path,
-          strokeColor: '#ff3b3b',
-          strokeWeight: 6,
-          map,
-        });
+          const marker = new window.Tmapv2.Marker({
+            position: new window.Tmapv2.LatLng(lat, lon),
+            icon: iconUrl,
+            iconSize: new window.Tmapv2.Size(60, 60),
+            map,
+          });
+          dynamicMarkers.push(marker);
+        }
+
+        // 경로(라인) 그리기
+        if (geometry.type === 'LineString') {
+          const path = geometry.coordinates.map(
+            ([lon, lat]) => new window.Tmapv2.LatLng(lat, lon)
+          );
+          new window.Tmapv2.Polyline({
+            path,
+            strokeColor: '#ff3b3b',
+            strokeWeight: 4,
+            map,
+          });
+        }
       }
-    });
+    );
   }
 }
 
