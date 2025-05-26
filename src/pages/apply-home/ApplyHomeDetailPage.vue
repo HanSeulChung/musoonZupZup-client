@@ -49,7 +49,10 @@
             GPT 분석 더 알아보기
           </button>
         </div>
-        <p v-if="gptComment === null">GPT 분석 중입니다...</p>
+        <div v-if="gptComment === null" class="loading-container">
+          <div class="spinner"></div>
+          <p>GPT 분석 중입니다<span class="dots"></span></p>
+        </div>
         <p v-else-if="!gptComment">분석 결과가 존재하지 않습니다.</p>
         <MarkdownRenderer :content="gptComment" class="gpt-text" />
       </div>
@@ -813,5 +816,37 @@ onMounted(async () => {
   }
 }
 
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 4px solid var(--color-outline);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.dots::after {
+  content: '';
+  animation: dots 1.5s steps(4,end) infinite;
+}
+
+@keyframes dots {
+  0%,20%   { content: ''; }
+  40%      { content: '.'; }
+  60%      { content: '..'; }
+  80%,100% { content: '...'; }
+}
 
 </style>
