@@ -4,7 +4,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { watch, ref } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
@@ -21,30 +21,37 @@ const props = defineProps({
   }
 })
 
-const rendered = computed(() => {
+const rendered = ref('')
+
+// content가 바뀔 때마다 한 줄씩 찍어 주기
+watch(() => props.content, (newC) => {
+  // 1) 원본 텍스트 추출(기존 로직 그대로)
   let text = ''
-
-  if (Array.isArray(props.content)) {
-    text = props.content
-      .filter(item => typeof item === 'string')
-      .join('\n\n')
-
-  } else if (typeof props.content === 'string') {
-    text = props.content
-
-  } else if (props.content && typeof props.content.comment === 'string') {
-    text = props.content.comment
+  if (Array.isArray(newC)) {
+    text = newC.filter(i=>typeof i==='string').join('\n\n')
+  } else if (typeof newC === 'string') {
+    text = newC
+  } else if (newC && typeof newC.comment === 'string') {
+    text = newC.comment
   }
+  text = text.trim()
 
-  // 1) marked 로 HTML 생성
-  const html = marked(text.trim(), {
-    gfm: true,
-    breaks: true,
-    smartLists: true
+  // 2) 문단 단위로 쪼개기 (혹은 .split('\n')로 한 줄씩)
+  const lines = text.split(/\n{2,}/g)
+
+  // 3) rendered 초기화
+  rendered.value = ''
+
+  // 4) 한 줄씩 순차적으로 붙이기
+  lines.forEach((line, idx) => {
+    setTimeout(() => {
+      const html = marked(line + '\n\n', {
+        gfm: true, breaks: true, smartLists: true
+      })
+      rendered.value += DOMPurify.sanitize(html)
+    }, idx * 200)  // 200ms 간격으로 한 문단씩
   })
-  // 2) DOMPurify 로 sanitize
-  return DOMPurify.sanitize(html)
-})
+}, { immediate: true })
 </script>
 
 <style lang="scss">
