@@ -41,11 +41,17 @@
         <h4>이전 질문 내역</h4>
         <ul>
           <li v-for="(item, index) in history" :key="index">
-            <strong>Q.</strong> {{ item.request }}  
+            <!-- index > 0일 때만 상단에 구분선 -->
+            <hr v-if="index > 0" class="history-divider" />
+
+            <strong class="history-label">Q.</strong>
+            <!-- 질문 내용은 span으로 -->
+            <span class="history-content">{{ item.request }}</span>
+
             <br />
-            <strong>A.</strong> 
+            <strong class="history-label">A.</strong>
             <div class="history-markdown">
-              <MarkdownRenderer :content="item.comment" />
+              <MarkdownRenderer :content="item.comment" :animate="false" />
             </div>
           </li>
         </ul>
@@ -247,7 +253,40 @@ onUnmounted(() => {
         }
       }
     }
+      /* 인라인 라벨 너비 고정 */
+    .history-label {
+      color: var(--color-primary);
+      display: inline-block;
+      width: 1.5rem;
+      /* 텍스트가 잘리지 않도록 */
+      white-space: nowrap;
+      font-size: 1.105rem;
+    }
+
+    /* 질문/답변 본문은 라벨 옆에 흐르게 */
+    .history-content {
+      display: inline-block;
+      /* 긴 텍스트도 잘리지 않고 줄 바꿈 */
+      white-space: normal;
+      word-break: break-word;
+      font-weight: bold;
+      color: var(--color-primary);
+      font-size: 1.105rem;
+    }
+
+    /* 구분선 */
+    .history-divider {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 0.75rem 0;
+    }
   }
+}
+
+.history-divider {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 0.75rem 0;
 }
 
 .loading-container {

@@ -18,6 +18,10 @@ const props = defineProps({
   content: {
     type: [String, Array, Object],
     default: () => ''
+  },
+  animate: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -36,6 +40,13 @@ watch(() => props.content, (newC) => {
   }
   text = text.trim()
 
+  if (!props.animate) {
+    const html = marked(text, {
+      gfm: true, breaks: true, smartLists: true
+    })
+    rendered.value = DOMPurify.sanitize(html)
+    return
+  }
   // 2) 문단 단위로 쪼개기 (혹은 .split('\n')로 한 줄씩)
   const lines = text.split(/\n{2,}/g)
 
@@ -77,6 +88,24 @@ watch(() => props.content, (newC) => {
 
 .markdown-body li {
   margin-bottom: 0.4em;
+}
+
+.markdown-body h1 {
+    margin: 1rem 0 0.5rem;    /* 위 1rem, 아래 0.5rem */
+    padding-top: 0.25rem;     /* 추가로 패딩을 주고 싶다면 */
+    font-size: 1.5rem;       /* 필요시 크기도 조정 */
+}
+
+.markdown-body h2 {
+    margin: 0.75rem 0 0.4rem;
+    margin-top: 0.2rem;
+    font-size: 1.2rem;
+}
+
+.markdown-body h3 {
+    margin: 0.6rem 0 0.3rem;
+    margin-top: 0.15rem;
+    font-size: 1.0rem;
 }
 </style>
 
