@@ -54,6 +54,10 @@ const summaryText = computed(() => {
     const time = Math.round(first.totalTime / 60);
     const fare = first.fare?.regular?.totalFare?.toLocaleString() ?? '0';
     return `총 거리: ${dist}km · 총 시간: ${time}분 · 요금: ${fare}원`;
+  } else if (props.mode === 'pedestrian') {
+    const dist = (first.properties.totalDistance / 1000).toFixed(1);
+    const time = Math.round(first.properties.totalTime / 60);
+    return `총 거리: ${dist}km · 총 시간: ${time}분`;
   } else {
     const dist = (first.properties.totalDistance / 1000).toFixed(1);
     const time = Math.round(first.properties.totalTime / 60);
@@ -137,6 +141,41 @@ function drawRoute(map) {
           });
         }
       });
+    });
+  } else if (props.mode === 'pedestrian') {
+    props.transitResult.forEach((feature, idx, arr) => {
+      const { geometry } = feature;
+
+      if (geometry.type === 'Point') {
+        const [lon, lat] = geometry.coordinates;
+        // 첫 번째 → 시작, 마지막 → 도착, 그 외 → 경유지
+        const iconUrl = idx === 0
+          ? markerStart
+          : idx === arr.length - 1
+            ? markerEnd
+            : markerWaypoint;
+
+        const marker = new window.Tmapv2.Marker({
+          position: new window.Tmapv2.LatLng(lat, lon),
+          icon: iconUrl,
+          iconSize: new window.Tmapv2.Size(30, 45),
+          map,
+        });
+        dynamicMarkers.push(marker);
+      }
+
+      if (geometry.type === 'LineString') {
+        const path = geometry.coordinates.map(
+          ([lon, lat]) => new window.Tmapv2.LatLng(lat, lon)
+        );
+        new window.Tmapv2.Polyline({
+          path,
+          strokeColor: '#000000',
+          strokeWeight: 4,
+          lineStyle: 'dot',
+          map,
+        });
+      }
     });
   } else {
     props.transitResult.forEach(({ geometry, properties }) => {
@@ -255,8 +294,9 @@ watch(() => props.transitResult, initializeMap, { immediate: true });
   background: white;
   padding: 2rem;
   border-radius: 16px;
-  max-width: 1200px;
-  width: 95%;
+  width: 80vw;             /* 뷰포트 너비의 90% */
+  max-width: 800px;        /* 최대 800px */
+  max-height: 80vh;        /* 뷰포트 높이의 90% */
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
   position: relative;
   display: flex;
