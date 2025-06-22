@@ -2,7 +2,7 @@
 
 Vue 3 + Vite 기반으로 개발된 무순위 청약 정보 플랫폼의 프론트엔드 프로젝트입니다.
 
-> 🔗 백엔드 레포도 함께 확인해보세요 👉 [musoon-zupzup-BE (Spring Boot)](https://lab.ssafy.com/ssafy_13th_18class/999_final/ssafy_home_final_chunghanseul_parkjaehwan_shinhaebom)
+> 🔗 백엔드 레포도 함께 확인해보세요 👉 [musoon-zupzup-BE (Spring Boot)](https://github.com/HanSeulChung/musoonZupZup-server.git)
 
 
 ## 🌐 주요 역할
